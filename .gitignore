@@ -1,0 +1,12 @@
+# Dependências (Obrigatório omitir segundo o enunciado)
+node_modules/
+
+# Ficheiros de ambiente (onde guardas a password do MongoDB)
+.env
+
+# Ficheiros do Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Ficheiros de log
+npm-debug.log*
