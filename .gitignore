@@ -1,7 +1,7 @@
-# Dependências (Obrigatório omitir segundo o enunciado)
+# Dependências
 node_modules/
 
-# Ficheiros de ambiente (onde guardas a password do MongoDB)
+# Ficheiros de ambiente
 .env
 
 # Ficheiros do Sistema Operativo
