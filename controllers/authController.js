@@ -21,6 +21,7 @@ AuthController.register = async (req, res) => {
     await user.save();
 
     req.session.userId = user._id;
+    req.session.userName = user.name;
     req.session.role   = user.role;
     res.redirect('/');
   } catch (err) {
@@ -47,6 +48,7 @@ AuthController.login = async (req, res) => {
     }
 
     req.session.userId = user._id;
+    req.session.userName = user.name;
     req.session.role   = user.role;
 
     // Redirecionar para a área correta conforme o role

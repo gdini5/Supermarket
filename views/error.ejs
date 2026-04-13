@@ -7,14 +7,12 @@
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
-  <%- include('./partials/navbar') %>
-  <main class="container">
-    <div class="card" style="text-align:center; padding: 3rem;">
+  <main class="container" style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
+    <div class="card" style="text-align:center; padding:3rem; max-width:480px; width:100%;">
       <h1 style="font-size:4rem; margin:0;">⚠️</h1>
-      <h2><%= message || 'Ocorreu um erro.' %></h2>
+      <h2 style="margin:1rem 0;"><%= message || 'Ocorreu um erro.' %></h2>
       <a href="/" class="btn btn-primary">Voltar ao início</a>
     </div>
   </main>
-  <%- include('./partials/footer') %>
 </body>
 </html>
