@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utilizadores — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">Utilizadores</h1>
+
+    <% if (users.length === 0) { %>
+      <p class="empty-state">Nenhum utilizador registado ainda.</p>
+    <% } else { %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Registado em</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(u => { %>
+            <tr>
+              <td><%= u.name %></td>
+              <td><%= u.email %></td>
+              <td>
+                <span class="badge badge--neutral"><%= u.role %></span>
+              </td>
+              <td>
+                <% if (u.active) { %>
+                  <span class="badge badge--success">Ativo</span>
+                <% } else { %>
+                  <span class="badge badge--danger">Inativo</span>
+                <% } %>
+              </td>
+              <td><%= u.createdAt.toLocaleDateString('pt-PT') %></td>
+              <td>
+                <form action="/admin/users/<%= u._id %>/toggle" method="POST">
+                  <button class="btn btn-sm <%= u.active ? 'btn-danger' : 'btn-success' %>">
+                    <%= u.active ? 'Desativar' : 'Ativar' %>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registo — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-container">
+    <div class="auth-card">
+      <h1>🛒 Marketplace</h1>
+      <h2>Criar conta</h2>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <form action="/auth/register" method="POST">
+        <div class="form-group">
+          <label for="name">Nome completo</label>
+          <input type="text" id="name" name="name" placeholder="João Silva" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="email@exemplo.pt" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
+        </div>
+        <div class="form-group">
+          <label for="address">Morada</label>
+          <input type="text" id="address" name="address" placeholder="Rua, Nº, Cidade" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Telefone</label>
+          <input type="tel" id="phone" name="phone" placeholder="9XXXXXXXX" required>
+        </div>
+        <div class="form-group">
+          <label for="role">Tipo de conta</label>
+          <select id="role" name="role">
+            <option value="client">Cliente</option>
+            <option value="supermarket">Supermercado</option>
+            <option value="courier">Estafeta</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Criar conta</button>
+      </form>
+
+      <p class="auth-footer">Já tens conta? <a href="/auth/login">Entrar</a></p>
+    </div>
+  </main>
+</body>
+</html>

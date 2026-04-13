@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">Dashboard</h1>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <span class="stat-number"><%= totalUsers %></span>
+        <span class="stat-label">Utilizadores</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🏪</span>
+        <span class="stat-number"><%= activeSupermarkets %></span>
+        <span class="stat-label">Supermercados Ativos</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📦</span>
+        <span class="stat-number"><%= totalOrders %></span>
+        <span class="stat-label">Total de Encomendas</span>
+      </div>
+      <div class="stat-card stat-card--warning">
+        <span class="stat-icon">⏳</span>
+        <span class="stat-number"><%= pendingSupermarkets %></span>
+        <span class="stat-label">Pendentes de Aprovação</span>
+        <% if (pendingSupermarkets > 0) { %>
+          <a href="/admin/supermarkets" class="btn btn-sm btn-warning">Ver agora</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <h2>Ações rápidas</h2>
+      <a href="/admin/supermarkets" class="btn btn-primary">Gerir Supermercados</a>
+      <a href="/admin/users"        class="btn btn-secondary">Gerir Utilizadores</a>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,41 +1,69 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+require('dotenv').config();
+const express       = require('express');
+const mongoose      = require('mongoose');
+const session       = require('express-session');
+const MongoStore    = require('connect-mongo');
+const methodOverride = require('method-override');
+const path          = require('path');
+const logger        = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// ── Ligação ao MongoDB ────────────────────────────────────────────────────────
+mongoose.connect('mongodb+srv://8240368_db_user:WHxtr6949@cluster0.zuridv2.mongodb.net/Marketplace')
+  .then(() => console.log('MongoDB ligado'))
+  .catch(err => { console.error('Erro MongoDB:', err); process.exit(1); });
 
-var app = express();
+const app = express();
 
-// view engine setup
+// ── View engine ───────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
+// ── Middlewares globais ───────────────────────────────────────────────────────
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(methodOverride('_method'));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// ── Sessões ───────────────────────────────────────────────────────────────────
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: 'mongodb+srv://8240368_db_user:WHxtr6949@cluster0.zuridv2.mongodb.net/Marketplace' }),
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 horas
+}));
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+// ── Variáveis locais disponíveis em todas as views ────────────────────────────
+app.use((req, res, next) => {
+  res.locals.currentUser = req.session.userId || null;
+  res.locals.currentRole = req.session.role   || null;
+  next();
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// ── Rotas ─────────────────────────────────────────────────────────────────────
+const { requireRole } = require('./middleware/auth');
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.use('/',             require('./routes/index'));
+app.use('/auth',         require('./routes/auth'));
+app.use('/admin',        requireRole('admin'),        require('./routes/admin'));
+app.use('/supermarket',  requireRole('supermarket'),  require('./routes/supermarkets'));
+app.use('/products',     requireRole('supermarket', 'admin'), require('./routes/products'));
+app.use('/orders',       require('./routes/orders'));
+
+// ── 404 ───────────────────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).render('error', { message: 'Página não encontrada.' });
 });
+
+// ── Erro genérico ─────────────────────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).render('error', { message: err.message || 'Erro interno.' });
+});
+
+// ── Arranque ──────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✔  Servidor em http://localhost:${PORT}`));
 
 module.exports = app;

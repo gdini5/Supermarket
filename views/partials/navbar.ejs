@@ -1,0 +1,25 @@
+<nav class="navbar">
+  <a href="/" class="navbar-brand">🛒 Marketplace</a>
+  <ul class="nav-links">
+    <% if (currentRole === 'admin') { %>
+      <li><a href="/admin/dashboard">Dashboard</a></li>
+      <li><a href="/admin/supermarkets">Supermercados</a></li>
+      <li><a href="/admin/users">Utilizadores</a></li>
+    <% } else if (currentRole === 'supermarket') { %>
+      <li><a href="/supermarket/dashboard">Dashboard</a></li>
+      <li><a href="/products">Produtos</a></li>
+      <li><a href="/orders">Encomendas</a></li>
+    <% } else if (currentRole === 'courier') { %>
+      <li><a href="/orders">Entregas</a></li>
+    <% } else if (currentRole === 'client') { %>
+      <li><a href="/products">Produtos</a></li>
+      <li><a href="/orders">As minhas Encomendas</a></li>
+    <% } %>
+    <% if (currentUser) { %>
+      <li><a href="/auth/logout" class="btn-logout">Sair</a></li>
+    <% } else { %>
+      <li><a href="/auth/login">Login</a></li>
+      <li><a href="/auth/register">Registar</a></li>
+    <% } %>
+  </ul>
+</nav>

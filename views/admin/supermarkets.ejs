@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supermercados — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">Supermercados</h1>
+
+    <% if (supermarkets.length === 0) { %>
+      <p class="empty-state">Nenhum supermercado registado ainda.</p>
+    <% } else { %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email do responsável</th>
+            <th>Morada</th>
+            <th>Estado</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% supermarkets.forEach(sm => { %>
+            <tr>
+              <td><strong><%= sm.name %></strong></td>
+              <td><%= sm.userId ? sm.userId.email : '—' %></td>
+              <td><%= sm.address %></td>
+              <td>
+                <% if (sm.approved && sm.active) { %>
+                  <span class="badge badge--success">Aprovado</span>
+                <% } else if (!sm.active) { %>
+                  <span class="badge badge--danger">Rejeitado</span>
+                <% } else { %>
+                  <span class="badge badge--warning">Pendente</span>
+                <% } %>
+              </td>
+              <td class="actions">
+                <% if (!sm.approved && sm.active) { %>
+                  <form action="/admin/supermarkets/<%= sm._id %>/approve" method="POST" style="display:inline">
+                    <button class="btn btn-sm btn-success">Aprovar</button>
+                  </form>
+                  <form action="/admin/supermarkets/<%= sm._id %>/reject" method="POST" style="display:inline">
+                    <button class="btn btn-sm btn-danger">Rejeitar</button>
+                  </form>
+                <% } else if (sm.approved) { %>
+                  <form action="/admin/supermarkets/<%= sm._id %>/reject" method="POST" style="display:inline">
+                    <button class="btn btn-sm btn-danger">Desativar</button>
+                  </form>
+                <% } else { %>
+                  <form action="/admin/supermarkets/<%= sm._id %>/approve" method="POST" style="display:inline">
+                    <button class="btn btn-sm btn-success">Reativar</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>
