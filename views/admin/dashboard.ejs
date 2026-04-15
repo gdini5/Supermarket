@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin — Marketplace</title>
+  <title>Dashboard — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
@@ -32,7 +34,7 @@
         <span class="stat-number"><%= pendingSupermarkets %></span>
         <span class="stat-label">Pendentes de Aprovação</span>
         <% if (pendingSupermarkets > 0) { %>
-          <a href="/admin/supermarkets" class="btn btn-sm btn-warning">Ver agora</a>
+          <a href="/admin/supermarkets" class="btn btn-warning btn-sm" style="margin-top:.5rem">Ver agora</a>
         <% } %>
       </div>
     </div>

@@ -4,32 +4,130 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body class="auth-page">
-  <main class="auth-container">
-    <div class="auth-card">
-      <h1>🛒 Marketplace</h1>
-      <h2>Entrar na conta</h2>
+  <div class="auth-split">
 
-      <% if (error) { %>
-        <div class="alert alert-error"><%= error %></div>
-      <% } %>
+    <!-- ── Lado esquerdo: formulário ──────────────────────────────────────── -->
+    <div class="auth-form-side">
+      <div class="auth-card">
 
-      <form action="/auth/login" method="POST">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="email@exemplo.pt" required autofocus>
+        <div class="auth-logo">
+          <span class="auth-logo-dot"></span>
+          <span class="auth-logo-text">Marketplace</span>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="••••••••" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
-      </form>
 
-      <p class="auth-footer">Ainda não tens conta? <a href="/auth/register">Registar</a></p>
+        <h2>Bem-vindo de volta</h2>
+        <p class="auth-subtitle">Entra na tua conta para continuar.</p>
+
+        <% if (error) { %>
+          <div class="alert alert-error">⚠ <%= error %></div>
+        <% } %>
+
+        <form id="loginForm" action="/auth/login" method="POST" novalidate>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+              placeholder="email@exemplo.pt" autocomplete="email" required>
+            <p class="field-msg" id="emailMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input type="password" id="password" name="password"
+                placeholder="••••••••" autocomplete="current-password" required>
+              <button type="button" class="toggle-pw" data-target="password">👁</button>
+            </div>
+            <p class="field-msg" id="passwordMsg"></p>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+            Entrar
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Ainda não tens conta? <a href="/auth/register">Criar conta</a>
+        </p>
+      </div>
     </div>
-  </main>
+
+    <!-- ── Lado direito: visual animado ───────────────────────────────────── -->
+    <div class="auth-visual-side">
+      <div class="geo-bg">
+        <div class="geo-orb geo-orb--1"></div>
+        <div class="geo-orb geo-orb--2"></div>
+        <div class="geo-orb geo-orb--3"></div>
+        <div class="geo-grid"></div>
+        <div class="geo-lines">
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+        </div>
+      </div>
+      <div class="visual-content">
+        <div class="visual-icon">🛒</div>
+        <h3>O teu mercado local,<br>agora online.</h3>
+        <p>Compara preços, faz encomendas e recebe em casa.</p>
+        <div class="visual-tags">
+          <span>Produtos frescos</span>
+          <span>Entregas rápidas</span>
+          <span>Preços locais</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const emailRe = /^[^\s@]+@[a-zA-Z]+(\.[a-zA-Z]+)+$/;
+
+    function setMsg(elId, input, type, text) {
+      const el = document.getElementById(elId);
+      el.textContent = text;
+      el.className   = 'field-msg ' + (text ? type : '');
+      if (input) input.className = type === 'ok' ? 'input-valid' : type === 'err' ? 'input-invalid' : '';
+    }
+
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('blur', () => {
+      const v = emailInput.value.trim();
+      if (!v)                    setMsg('emailMsg', emailInput, 'err', '✕ Campo obrigatório');
+      else if (!emailRe.test(v)) setMsg('emailMsg', emailInput, 'err', '✕ Formato de email inválido');
+      else                       setMsg('emailMsg', emailInput, 'ok',  '✓ Email válido');
+    });
+    emailInput.addEventListener('input', () => {
+      if (document.getElementById('emailMsg').classList.contains('err') && emailRe.test(emailInput.value.trim()))
+        setMsg('emailMsg', emailInput, 'ok', '✓ Email válido');
+    });
+
+    const pwInput = document.getElementById('password');
+    pwInput.addEventListener('blur', () => {
+      if (!pwInput.value) setMsg('passwordMsg', pwInput, 'err', '✕ Campo obrigatório');
+      else                setMsg('passwordMsg', pwInput, '', '');
+    });
+
+    document.querySelectorAll('.toggle-pw').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = document.getElementById(btn.dataset.target);
+        t.type = t.type === 'text' ? 'password' : 'text';
+        btn.textContent = t.type === 'text' ? '🙈' : '👁';
+      });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      let ok = true;
+      if (!emailRe.test(emailInput.value.trim())) { setMsg('emailMsg', emailInput, 'err', '✕ Email inválido'); ok = false; }
+      if (!pwInput.value)                          { setMsg('passwordMsg', pwInput,  'err', '✕ Campo obrigatório'); ok = false; }
+      if (!ok) { e.preventDefault(); return; }
+      document.getElementById('submitBtn').textContent = 'A entrar…';
+    });
+  </script>
 </body>
 </html>

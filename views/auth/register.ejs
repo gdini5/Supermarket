@@ -3,53 +3,367 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registo — Marketplace</title>
+  <title>Registar — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body class="auth-page">
-  <main class="auth-container">
-    <div class="auth-card">
-      <h1>🛒 Marketplace</h1>
-      <h2>Criar conta</h2>
+  <div class="auth-split">
 
-      <% if (error) { %>
-        <div class="alert alert-error"><%= error %></div>
-      <% } %>
+    <!-- ── Lado esquerdo: formulário ──────────────────────────────────────── -->
+    <div class="auth-form-side">
+      <div class="auth-card">
 
-      <form action="/auth/register" method="POST">
-        <div class="form-group">
-          <label for="name">Nome completo</label>
-          <input type="text" id="name" name="name" placeholder="João Silva" required autofocus>
+        <div class="auth-logo">
+          <span class="auth-logo-dot"></span>
+          <span class="auth-logo-text">Marketplace</span>
         </div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="email@exemplo.pt" required>
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
-        </div>
-        <div class="form-group">
-          <label for="address">Morada</label>
-          <input type="text" id="address" name="address" placeholder="Rua, Nº, Cidade" required>
-        </div>
-        <div class="form-group">
-          <label for="phone">Telefone</label>
-          <input type="tel" id="phone" name="phone" placeholder="9XXXXXXXX" required>
-        </div>
-        <div class="form-group">
-          <label for="role">Tipo de conta</label>
-          <select id="role" name="role">
-            <option value="client">Cliente</option>
-            <option value="supermarket">Supermercado</option>
-            <option value="courier">Estafeta</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Criar conta</button>
-      </form>
 
-      <p class="auth-footer">Já tens conta? <a href="/auth/login">Entrar</a></p>
+        <h2>Criar conta</h2>
+        <p class="auth-subtitle">Escolhe o tipo de conta para começar.</p>
+
+        <% if (error) { %>
+          <div class="alert alert-error">⚠ <%= error %></div>
+        <% } %>
+
+        <!-- Seletor de tipo de conta -->
+        <div class="role-selector">
+          <button type="button" class="role-btn active" data-role="client">
+            <span class="role-icon">🛍️</span>
+            <span class="role-label">Cliente</span>
+          </button>
+          <button type="button" class="role-btn" data-role="supermarket">
+            <span class="role-icon">🏪</span>
+            <span class="role-label">Supermercado</span>
+          </button>
+          <button type="button" class="role-btn" data-role="courier">
+            <span class="role-icon">🚴</span>
+            <span class="role-label">Estafeta</span>
+          </button>
+        </div>
+
+        <form id="registerForm" action="/auth/register" method="POST" novalidate>
+          <input type="hidden" id="roleInput" name="role" value="client">
+
+          <!-- ── Campos comuns a todos ──────────────────────────────────── -->
+          <div class="form-group">
+            <label for="name" id="nameLabel">Nome completo</label>
+            <input type="text" id="name" name="name"
+              placeholder="João Silva" autocomplete="name" required>
+            <p class="field-msg" id="nameMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+              placeholder="email@exemplo.pt" autocomplete="email" required>
+            <p class="field-msg" id="emailMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input type="password" id="password" name="password"
+                placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" data-target="password">👁</button>
+            </div>
+            <div class="strength-bar" id="strengthBar">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <p class="strength-label" id="strengthLabel"></p>
+            <p class="field-msg" id="passwordMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm">Confirmar password</label>
+            <div class="input-wrap">
+              <input type="password" id="confirm" name="confirm"
+                placeholder="Repete a password" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" data-target="confirm">👁</button>
+            </div>
+            <p class="field-msg" id="confirmMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Telefone</label>
+            <input type="tel" id="phone" name="phone"
+              placeholder="9XXXXXXXX" autocomplete="tel" required>
+            <p class="field-msg" id="phoneMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Morada</label>
+            <input type="text" id="address" name="address"
+              placeholder="Rua, Nº, Cidade" autocomplete="street-address" required>
+            <p class="field-msg" id="addressMsg"></p>
+          </div>
+
+          <!-- ── Campos extra: Supermercado ─────────────────────────────── -->
+          <div class="extra-fields" id="supermarketFields" style="display:none">
+            <div class="fields-divider">Informação do estabelecimento</div>
+
+            <div class="form-group">
+              <label for="shopName">Nome do estabelecimento</label>
+              <input type="text" id="shopName" name="shopName"
+                placeholder="Mercado da Praça">
+              <p class="field-msg" id="shopNameMsg"></p>
+            </div>
+
+            <div class="form-group">
+              <label for="shopAddress">Morada comercial</label>
+              <input type="text" id="shopAddress" name="shopAddress"
+                placeholder="Rua Comercial, Nº, Cidade">
+              <p class="field-msg" id="shopAddressMsg"></p>
+            </div>
+
+            <div class="form-group">
+              <label for="schedule">Horário de funcionamento</label>
+              <input type="text" id="schedule" name="schedule"
+                placeholder="Seg-Sex 8h-20h, Sáb 9h-13h">
+              <p class="field-msg" id="scheduleMsg"></p>
+            </div>
+          </div>
+
+          <!-- ── Campos extra: Estafeta ─────────────────────────────────── -->
+          <div class="extra-fields" id="courierFields" style="display:none">
+            <div class="fields-divider">Informação de entrega</div>
+
+            <div class="form-group">
+              <label for="vehicle">Meio de transporte</label>
+              <select id="vehicle" name="vehicle">
+                <option value="">Seleciona...</option>
+                <option value="bicycle">Bicicleta</option>
+                <option value="motorcycle">Mota</option>
+                <option value="car">Carro</option>
+                <option value="foot">A pé</option>
+              </select>
+              <p class="field-msg" id="vehicleMsg"></p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+            Criar conta
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Já tens conta? <a href="/auth/login">Entrar</a>
+        </p>
+      </div>
     </div>
-  </main>
+
+    <!-- ── Lado direito: visual animado ───────────────────────────────────── -->
+    <div class="auth-visual-side">
+      <div class="geo-bg">
+        <div class="geo-orb geo-orb--1"></div>
+        <div class="geo-orb geo-orb--2"></div>
+        <div class="geo-orb geo-orb--3"></div>
+        <div class="geo-grid"></div>
+        <div class="geo-lines">
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+          <div class="geo-line"></div>
+        </div>
+      </div>
+      <div class="visual-content" id="visualContent">
+        <div class="visual-icon" id="visualIcon">🛍️</div>
+        <h3 id="visualTitle">Faz as tuas compras<br>sem sair de casa.</h3>
+        <p id="visualDesc">Pesquisa produtos, compara preços e recebe em casa.</p>
+        <div class="visual-tags" id="visualTags">
+          <span>Produtos frescos</span>
+          <span>Entregas rápidas</span>
+          <span>Preços locais</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Regex ─────────────────────────────────────────────────────────────────
+    const nameRe  = /^[a-zA-ZÀ-ÿ\s\-']+$/;
+    const emailRe = /^[^\s@]+@[a-zA-Z]+(\.[a-zA-Z]+)+$/;
+    const phoneRe = /^[9][1236]\d{7}$/;
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function setMsg(elId, input, type, text) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.textContent = text;
+      el.className   = 'field-msg ' + (text ? type : '');
+      if (input) input.className = type === 'ok' ? 'input-valid' : type === 'err' ? 'input-invalid' : '';
+    }
+
+    function val(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+    // ── Role selector ─────────────────────────────────────────────────────────
+    const roleData = {
+      client: {
+        icon: '🛍️',
+        title: 'Faz as tuas compras<br>sem sair de casa.',
+        desc: 'Pesquisa produtos, compara preços e recebe em casa.',
+        tags: ['Produtos frescos', 'Entregas rápidas', 'Preços locais'],
+        nameLabel: 'Nome completo',
+        namePlaceholder: 'João Silva'
+      },
+      supermarket: {
+        icon: '🏪',
+        title: 'Leva o teu mercado<br>ao mundo digital.',
+        desc: 'Gere o teu catálogo, recebe encomendas e aumenta as vendas.',
+        tags: ['Gestão de produtos', 'Encomendas online', 'Maior alcance'],
+        nameLabel: 'Nome do responsável',
+        namePlaceholder: 'Maria Santos'
+      },
+      courier: {
+        icon: '🚴',
+        title: 'Entrega, ganha,<br>no teu ritmo.',
+        desc: 'Escolhe as entregas que queres fazer e gere o teu tempo.',
+        tags: ['Horário flexível', 'Pagamento rápido', 'Zona à escolha'],
+        nameLabel: 'Nome completo',
+        namePlaceholder: 'Carlos Ferreira'
+      }
+    };
+
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const role = btn.dataset.role;
+        document.getElementById('roleInput').value = role;
+
+        // mostrar/esconder campos extra
+        document.getElementById('supermarketFields').style.display = role === 'supermarket' ? 'block' : 'none';
+        document.getElementById('courierFields').style.display      = role === 'courier'      ? 'block' : 'none';
+
+        // atualizar label e placeholder do nome
+        const data = roleData[role];
+        document.getElementById('nameLabel').textContent      = data.nameLabel;
+        document.getElementById('name').placeholder           = data.namePlaceholder;
+
+        // animar o painel direito
+        const content = document.getElementById('visualContent');
+        content.style.opacity = '0';
+        content.style.transform = 'translateY(12px)';
+        setTimeout(() => {
+          document.getElementById('visualIcon').textContent  = data.icon;
+          document.getElementById('visualTitle').innerHTML   = data.title;
+          document.getElementById('visualDesc').textContent  = data.desc;
+          const tagsEl = document.getElementById('visualTags');
+          tagsEl.innerHTML = data.tags.map(t => `<span>${t}</span>`).join('');
+          content.style.opacity = '1';
+          content.style.transform = 'translateY(0)';
+        }, 180);
+      });
+    });
+
+    // ── Validações em tempo real ──────────────────────────────────────────────
+    const nameInput = document.getElementById('name');
+    nameInput.addEventListener('blur', () => {
+      const v = nameInput.value.trim();
+      if (!v)                 setMsg('nameMsg', nameInput, 'err', '✕ Campo obrigatório');
+      else if (v.length < 3)  setMsg('nameMsg', nameInput, 'err', '✕ Nome demasiado curto');
+      else if (!nameRe.test(v)) setMsg('nameMsg', nameInput, 'err', '✕ O nome só pode conter letras');
+      else                    setMsg('nameMsg', nameInput, 'ok',  '✓ Nome válido');
+    });
+
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('blur', () => {
+      const v = emailInput.value.trim();
+      if (!v)                    setMsg('emailMsg', emailInput, 'err', '✕ Campo obrigatório');
+      else if (!emailRe.test(v)) setMsg('emailMsg', emailInput, 'err', '✕ Formato inválido (ex: nome@dominio.pt)');
+      else                       setMsg('emailMsg', emailInput, 'ok',  '✓ Email válido');
+    });
+    emailInput.addEventListener('input', () => {
+      if (document.getElementById('emailMsg').classList.contains('err') && emailRe.test(emailInput.value.trim()))
+        setMsg('emailMsg', emailInput, 'ok', '✓ Email válido');
+    });
+
+    const pwInput     = document.getElementById('password');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthLbl = document.getElementById('strengthLabel');
+    const levels      = ['', 'Muito fraca', 'Fraca', 'Razoável', 'Forte'];
+
+    function calcStrength(pw) {
+      let s = 0;
+      if (pw.length >= 6)  s++;
+      if (pw.length >= 10) s++;
+      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+      if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) s++;
+      return s;
+    }
+
+    pwInput.addEventListener('input', () => {
+      const pw = pwInput.value;
+      const s  = pw ? calcStrength(pw) : 0;
+      strengthBar.className = 'strength-bar' + (pw ? ' s' + s : '');
+      strengthLbl.textContent = pw ? 'Força: ' + (levels[s] || 'Muito fraca') : '';
+      if (pw && pw.length < 6) setMsg('passwordMsg', pwInput, 'err', '✕ Mínimo 6 caracteres');
+      else if (pw)             setMsg('passwordMsg', pwInput, 'ok',  '✓ Password aceite');
+      else                     setMsg('passwordMsg', pwInput, '', '');
+      if (confirmInput.value)  validateConfirm();
+    });
+
+    const confirmInput = document.getElementById('confirm');
+    function validateConfirm() {
+      if (!confirmInput.value)             setMsg('confirmMsg', confirmInput, 'err', '✕ Campo obrigatório');
+      else if (pwInput.value !== confirmInput.value) setMsg('confirmMsg', confirmInput, 'err', '✕ Passwords não coincidem');
+      else                                 setMsg('confirmMsg', confirmInput, 'ok',  '✓ Passwords coincidem');
+    }
+    confirmInput.addEventListener('input', validateConfirm);
+    confirmInput.addEventListener('blur',  validateConfirm);
+
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('blur', () => {
+      const v = phoneInput.value.trim();
+      if (!v)               setMsg('phoneMsg', phoneInput, 'err', '✕ Campo obrigatório');
+      else if (!phoneRe.test(v)) setMsg('phoneMsg', phoneInput, 'err', '✕ Número inválido (ex: 912345678)');
+      else                  setMsg('phoneMsg', phoneInput, 'ok',  '✓ Número válido');
+    });
+
+    const addressInput = document.getElementById('address');
+    addressInput.addEventListener('blur', () => {
+      if (!addressInput.value.trim()) setMsg('addressMsg', addressInput, 'err', '✕ Campo obrigatório');
+      else                            setMsg('addressMsg', addressInput, 'ok',  '✓');
+    });
+
+    // ── Toggle visibilidade ───────────────────────────────────────────────────
+    document.querySelectorAll('.toggle-pw').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = document.getElementById(btn.dataset.target);
+        t.type = t.type === 'text' ? 'password' : 'text';
+        btn.textContent = t.type === 'text' ? '🙈' : '👁';
+      });
+    });
+
+    // ── Submit ────────────────────────────────────────────────────────────────
+    document.getElementById('registerForm').addEventListener('submit', e => {
+      let ok = true;
+      const role = document.getElementById('roleInput').value;
+
+      if (!nameRe.test(val('name')) || val('name').length < 3)  { setMsg('nameMsg',    nameInput,    'err', '✕ Nome inválido');          ok = false; }
+      if (!emailRe.test(val('email')))                           { setMsg('emailMsg',   emailInput,   'err', '✕ Email inválido');         ok = false; }
+      if (val('password').length < 6)                            { setMsg('passwordMsg', pwInput,     'err', '✕ Mínimo 6 caracteres');    ok = false; }
+      if (pwInput.value !== confirmInput.value)                  { setMsg('confirmMsg', confirmInput, 'err', '✕ Passwords não coincidem'); ok = false; }
+      if (!phoneRe.test(val('phone')))                           { setMsg('phoneMsg',   phoneInput,   'err', '✕ Número inválido');        ok = false; }
+      if (!val('address'))                                       { setMsg('addressMsg', addressInput, 'err', '✕ Campo obrigatório');      ok = false; }
+
+      if (role === 'supermarket') {
+        if (!val('shopName'))    { setMsg('shopNameMsg',    document.getElementById('shopName'),    'err', '✕ Campo obrigatório'); ok = false; }
+        if (!val('shopAddress')) { setMsg('shopAddressMsg', document.getElementById('shopAddress'), 'err', '✕ Campo obrigatório'); ok = false; }
+        if (!val('schedule'))    { setMsg('scheduleMsg',    document.getElementById('schedule'),    'err', '✕ Campo obrigatório'); ok = false; }
+      }
+
+      if (role === 'courier') {
+        if (!val('vehicle')) { setMsg('vehicleMsg', document.getElementById('vehicle'), 'err', '✕ Seleciona um meio de transporte'); ok = false; }
+      }
+
+      if (!ok) { e.preventDefault(); return; }
+      document.getElementById('submitBtn').textContent = 'A criar conta…';
+    });
+  </script>
 </body>
 </html>
