@@ -6,9 +6,10 @@ const MongoStore     = require('connect-mongo');
 const methodOverride = require('method-override');
 const path           = require('path');
 const logger         = require('morgan');
+const mongoUri = process.env.MONGODB_URI;
  
 // ── Ligação ao MongoDB ────────────────────────────────────────────────────────
-mongoose.connect('mongodb+srv://8240368_db_user:WHxtr6949@cluster0.zuridv2.mongodb.net/Marketplace')
+mongoose.connect(mongoUri)
   .then(() => console.log('✔  MongoDB ligado'))
   .catch(err => { console.error('✘  Erro MongoDB:', err); process.exit(1); });
  
