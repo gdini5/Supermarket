@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encomenda — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container" style="max-width:780px">
+
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+      <a href="/orders" class="btn btn-secondary btn-sm">← Voltar</a>
+      <h1 class="page-title" style="margin:0">
+        Encomenda
+        <span style="font-size:.95rem;color:var(--text-3);font-weight:500">
+          #<%= order._id.toString().slice(-6).toUpperCase() %>
+        </span>
+      </h1>
+    </div>
+
+    <%
+      const statusMap = {
+        pending:'⏳ Pendente', confirmed:'✅ Confirmada', preparing:'👨‍🍳 Em preparação',
+        delivering:'🚴 Em entrega', delivered:'📦 Entregue', cancelled:'✕ Cancelada'
+      };
+      const statusClass = {
+        pending:'badge--warning', confirmed:'badge--success', preparing:'badge--warning',
+        delivering:'badge--neutral', delivered:'badge--success', cancelled:'badge--danger'
+      };
+    %>
+
+    <!-- Cabeçalho da encomenda -->
+    <div class="card" style="margin-bottom:1.25rem">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+        <div>
+          <p style="font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Estado</p>
+          <span class="badge <%= statusClass[order.status] %>" style="font-size:.9rem;padding:.35rem 1rem">
+            <%= statusMap[order.status] %>
+          </span>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Supermercado</p>
+          <p style="font-weight:600"><%= order.supermarketId?.name || '—' %></p>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Cliente</p>
+          <p><%= order.clientId?.name || '—' %></p>
+          <p style="font-size:.78rem;color:var(--text-3)"><%= order.clientId?.email || '' %></p>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Entrega</p>
+          <p><%= order.deliveryMethod === 'pickup' ? '🏪 Levantamento em loja' : '🚴 Estafeta' %></p>
+          <% if (order.courierId) { %>
+            <p style="font-size:.78rem;color:var(--text-3)">Estafeta: <%= order.courierId.name %></p>
+          <% } %>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Data</p>
+          <p style="font-size:.875rem"><%= order.createdAt.toLocaleDateString('pt-PT') %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Itens da encomenda -->
+    <div class="card" style="margin-bottom:1.25rem">
+      <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:1rem">Produtos</h3>
+      <table class="table">
+        <thead>
+          <tr><th>Produto</th><th>Preço unit.</th><th>Qtd.</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+          <% order.items.forEach(item => { %>
+            <tr>
+              <td><%= item.name %></td>
+              <td><%= item.price.toFixed(2) %> €</td>
+              <td><%= item.quantity %></td>
+              <td><strong><%= (item.price * item.quantity).toFixed(2) %> €</strong></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <div style="text-align:right;padding:1rem 1.1rem 0;border-top:1px solid var(--border);margin-top:.5rem">
+        <% if (order.deliveryCost > 0) { %>
+          <p style="color:var(--text-2);font-size:.875rem;margin-bottom:.3rem">
+            Entrega: <%= order.deliveryCost.toFixed(2) %> €
+          </p>
+        <% } %>
+        <p style="font-size:1.2rem;font-weight:700">Total: <%= order.total.toFixed(2) %> €</p>
+      </div>
+    </div>
+
+    <!-- Ações de mudança de estado -->
+    <div class="card" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
+
+      <% if (currentRole === 'supermarket' && order.status === ORDER_STATUS.PENDING) { %>
+        <form action="/orders/<%= order._id %>/status" method="POST">
+          <input type="hidden" name="status" value="confirmed">
+          <button class="btn btn-success">✅ Confirmar encomenda</button>
+        </form>
+        <form action="/orders/<%= order._id %>/status" method="POST">
+          <input type="hidden" name="status" value="cancelled">
+          <button class="btn btn-danger" onclick="return confirm('Cancelar esta encomenda?')">✕ Rejeitar</button>
+        </form>
+      <% } %>
+
+      <% if (currentRole === 'supermarket' && order.status === ORDER_STATUS.CONFIRMED) { %>
+        <form action="/orders/<%= order._id %>/status" method="POST">
+          <input type="hidden" name="status" value="preparing">
+          <button class="btn btn-primary">👨‍🍳 Iniciar preparação</button>
+        </form>
+      <% } %>
+
+      <% if (currentRole === 'courier' && order.status === ORDER_STATUS.PREPARING && order.deliveryMethod === 'courier') { %>
+        <form action="/orders/<%= order._id %>/status" method="POST">
+          <input type="hidden" name="status" value="delivering">
+          <button class="btn btn-primary">🚴 Aceitar entrega</button>
+        </form>
+      <% } %>
+
+      <% if (currentRole === 'courier' && order.status === ORDER_STATUS.DELIVERING) { %>
+        <form action="/orders/<%= order._id %>/status" method="POST">
+          <input type="hidden" name="status" value="delivered">
+          <button class="btn btn-success">📦 Marcar como entregue</button>
+        </form>
+      <% } %>
+
+      <% if (currentRole === 'client' && canCancel) { %>
+        <form action="/orders/<%= order._id %>/status" method="POST"
+              onsubmit="return confirm('Tens a certeza que queres cancelar esta encomenda?')">
+          <input type="hidden" name="status" value="cancelled">
+          <button class="btn btn-danger">✕ Cancelar encomenda</button>
+        </form>
+        <p style="font-size:.8rem;color:var(--amber)">
+          ⚠ Só podes cancelar nos primeiros 5 minutos após a confirmação.
+        </p>
+      <% } %>
+
+      <% if (currentRole === 'admin') { %>
+        <form action="/orders/<%= order._id %>/status" method="POST"
+              onsubmit="return confirm('Forçar cancelamento desta encomenda?')">
+          <input type="hidden" name="status" value="cancelled">
+          <button class="btn btn-danger btn-sm">Forçar cancelamento (admin)</button>
+        </form>
+      <% } %>
+
+    </div>
+
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

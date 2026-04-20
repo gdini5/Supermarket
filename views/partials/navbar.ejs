@@ -1,6 +1,7 @@
 <nav class="navbar">
   <a href="/" class="navbar-brand">🛒 Marketplace</a>
   <ul class="nav-links">
+
     <% if (currentRole === 'admin') { %>
       <li><a href="/admin/dashboard">Dashboard</a></li>
       <li><a href="/admin/supermarkets">Supermercados</a></li>
@@ -9,14 +10,18 @@
     <% } else if (currentRole === 'supermarket') { %>
       <li><a href="/supermarket/dashboard">Dashboard</a></li>
       <li><a href="/products">Produtos</a></li>
+      <li><a href="/supermarket/pos">Caixa</a></li>
       <li><a href="/orders">Encomendas</a></li>
 
     <% } else if (currentRole === 'courier') { %>
+      <li><a href="/courier/dashboard">Dashboard</a></li>
       <li><a href="/orders">Entregas</a></li>
 
     <% } else if (currentRole === 'client') { %>
-      <li><a href="/products">Produtos</a></li>
-      <li><a href="/orders">As minhas Encomendas</a></li>
+      <li><a href="/client/dashboard">Início</a></li>
+      <li><a href="/orders/shop">Loja</a></li>
+      <li><a href="/orders/cart">🛒 Carrinho</a></li>
+      <li><a href="/orders">Encomendas</a></li>
 
     <% } else { %>
       <li><a href="/auth/login">Login</a></li>
@@ -24,7 +29,15 @@
     <% } %>
 
     <% if (currentUser) { %>
+      <% if (currentName) { %>
+        <li>
+          <span style="color:var(--text-3);font-size:.82rem;padding:.4rem .5rem;display:inline-block">
+            Olá, <%= currentName.split(' ')[0] %>
+          </span>
+        </li>
+      <% } %>
       <li><a href="/auth/logout" class="btn-logout">Sair</a></li>
     <% } %>
+
   </ul>
 </nav>

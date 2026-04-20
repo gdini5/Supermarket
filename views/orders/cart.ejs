@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrinho — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">Carrinho</h1>
+
+    <% if (cart.error === 'stock_insuficiente') { %>
+      <div class="alert alert-error" style="margin-bottom:1rem">
+        ⚠ Stock insuficiente para um dos produtos. Atualiza as quantidades.
+      </div>
+    <% } %>
+
+    <% if (!cart.items || cart.items.length === 0) { %>
+      <div class="card" style="text-align:center;padding:3rem">
+        <p style="font-size:2.5rem;margin-bottom:.75rem">🛒</p>
+        <p style="color:var(--text-2);margin-bottom:1.25rem">O teu carrinho está vazio.</p>
+        <a href="/orders/shop" class="btn btn-primary">Ir às compras</a>
+      </div>
+    <% } else { %>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+
+        <!-- Itens -->
+        <div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Preço unit.</th>
+                <th>Qtd.</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% let total = 0; cart.items.forEach(item => { const sub = item.price * item.quantity; total += sub; %>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:.75rem">
+                      <img src="/images/uploads/<%= item.image %>" alt="<%= item.name %>"
+                        style="width:42px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"
+                        onerror="this.src='/images/uploads/default-product.png'">
+                      <span style="font-weight:500"><%= item.name %></span>
+                    </div>
+                  </td>
+                  <td><%= item.price.toFixed(2) %> €</td>
+                  <td>
+                    <form action="/orders/cart/update" method="POST"
+                          style="display:flex;gap:.4rem;align-items:center">
+                      <input type="hidden" name="productId" value="<%= item.productId %>">
+                      <input type="number" name="quantity" value="<%= item.quantity %>"
+                        min="0" max="99"
+                        style="width:58px;padding:.3rem .5rem;background:var(--bg-3);border:1px solid var(--border);
+                               border-radius:6px;color:var(--text);text-align:center;font-size:.9rem"
+                        onchange="this.form.submit()">
+                    </form>
+                  </td>
+                  <td><strong><%= sub.toFixed(2) %> €</strong></td>
+                  <td>
+                    <form action="/orders/cart/update" method="POST">
+                      <input type="hidden" name="productId" value="<%= item.productId %>">
+                      <input type="hidden" name="quantity"  value="0">
+                      <button class="btn btn-sm btn-danger">✕</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+
+          <form action="/orders/cart/clear" method="POST" style="margin-top:.75rem">
+            <button class="btn btn-secondary btn-sm"
+              onclick="return confirm('Limpar o carrinho?')">
+              Limpar carrinho
+            </button>
+          </form>
+        </div>
+
+        <!-- Resumo e checkout -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:1.05rem;margin-bottom:1.25rem">
+            Finalizar encomenda
+          </h3>
+
+          <form action="/orders/checkout" method="POST">
+            <div class="form-group">
+              <label>Método de entrega</label>
+              <select name="deliveryMethod" required>
+                <option value="pickup">🏪 Levantamento em loja (grátis)</option>
+                <option value="courier">🚴 Entrega por estafeta</option>
+              </select>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                <span style="color:var(--text-2)">Total dos produtos</span>
+                <strong style="font-size:1.2rem"><%= total.toFixed(2) %> €</strong>
+              </div>
+              <p style="font-size:.78rem;color:var(--text-3);margin-bottom:1rem">
+                * Custos de entrega aplicados no checkout conforme o supermercado.
+              </p>
+              <button type="submit" class="btn btn-primary btn-block">
+                Confirmar encomenda
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    <% } %>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

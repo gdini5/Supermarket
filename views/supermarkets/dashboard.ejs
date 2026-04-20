@@ -2,14 +2,65 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Supermercado — Marketplace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
   <%- include('../partials/navbar') %>
   <main class="container">
-    <h1 class="page-title">Dashboard Supermercado</h1>
-    <div class="alert alert-info">🚧 Módulo em desenvolvimento — Membro B.</div>
+    <h1 class="page-title"><%= sm.name %></h1>
+
+    <% if (!sm.approved) { %>
+      <div class="alert alert-error" style="margin-bottom:1.5rem">
+        ⏳ O teu supermercado está a aguardar aprovação. Não podes gerir produtos nem receber encomendas enquanto não fores aprovado.
+      </div>
+    <% } %>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">📦</span>
+        <span class="stat-number"><%= totalOrders %></span>
+        <span class="stat-label">Total de Encomendas</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🛒</span>
+        <span class="stat-number"><%= totalProducts %></span>
+        <span class="stat-label">Produtos Ativos</span>
+      </div>
+      <div class="stat-card stat-card--warning">
+        <span class="stat-icon">⏳</span>
+        <span class="stat-number"><%= pendingOrders %></span>
+        <span class="stat-label">Encomendas Pendentes</span>
+        <% if (pendingOrders > 0) { %>
+          <a href="/orders" class="btn btn-warning btn-sm" style="margin-top:.5rem">Ver agora</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+      <div class="quick-links">
+        <h2>Ações rápidas</h2>
+        <a href="/products"        class="btn btn-secondary">Gerir Produtos</a>
+        <a href="/products/create" class="btn btn-primary">+ Novo Produto</a>
+        <a href="/supermarket/pos" class="btn btn-secondary" style="margin-top:.5rem">🖥 Venda em Caixa</a>
+        <a href="/orders"          class="btn btn-secondary" style="margin-top:.5rem">Ver Encomendas</a>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:.9rem;margin-bottom:1rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em">Top 5 Produtos Mais Vendidos</h3>
+        <% if (topProducts.length === 0) { %>
+          <p style="color:var(--text-3);font-size:.875rem">Ainda sem vendas registadas.</p>
+        <% } else { %>
+          <% topProducts.forEach((p, i) => { %>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border)">
+              <span style="color:var(--text-2);font-size:.875rem"><span style="color:var(--text-3);margin-right:.4rem"><%= i+1 %>.</span><%= p._id %></span>
+              <span class="badge badge--neutral"><%= p.total %> un.</span>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
   </main>
   <%- include('../partials/footer') %>
 </body>

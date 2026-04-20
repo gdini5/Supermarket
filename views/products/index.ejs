@@ -2,14 +2,88 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Produtos — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
   <%- include('../partials/navbar') %>
   <main class="container">
     <h1 class="page-title">Produtos</h1>
-    <div class="alert alert-info">🚧 Módulo em desenvolvimento — Membro B.</div>
+
+    <div class="toolbar">
+      <form action="/products" method="GET" class="search-form">
+        <input type="text" name="search"
+          placeholder="Pesquisar produto..."
+          value="<%= search %>">
+        <select name="category">
+          <option value="">Todas as categorias</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c %>" <%= category === c ? 'selected' : '' %>><%= c %></option>
+          <% }) %>
+        </select>
+        <button type="submit" class="btn btn-secondary">Filtrar</button>
+        <% if (search || category) { %>
+          <a href="/products" class="btn btn-secondary">Limpar</a>
+        <% } %>
+      </form>
+      <a href="/products/create" class="btn btn-primary">+ Novo Produto</a>
+    </div>
+
+    <% if (products.length === 0) { %>
+      <p class="empty-state">Nenhum produto encontrado.</p>
+    <% } else { %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Imagem</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Preço</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach(p => { %>
+            <tr>
+              <td>
+                <img src="/images/uploads/<%= p.image %>"
+                  alt="<%= p.name %>"
+                  style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"
+                  onerror="this.src='/images/uploads/default-product.png'">
+              </td>
+              <td><strong><%= p.name %></strong>
+                <% if (p.description) { %>
+                  <p style="font-size:.78rem;color:var(--text-3);margin-top:.15rem"><%= p.description.substring(0, 50) %><%= p.description.length > 50 ? '…' : '' %></p>
+                <% } %>
+              </td>
+              <td><span class="badge badge--neutral"><%= p.category %></span></td>
+              <td><strong><%= p.price.toFixed(2) %> €</strong></td>
+              <td>
+                <span class="badge <%= p.stock > 0 ? 'badge--success' : 'badge--danger' %>">
+                  <%= p.stock %> un.
+                </span>
+              </td>
+              <td>
+                <span class="badge <%= p.active ? 'badge--success' : 'badge--danger' %>">
+                  <%= p.active ? 'Ativo' : 'Inativo' %>
+                </span>
+              </td>
+              <td class="actions">
+                <a href="/products/<%= p._id %>/edit" class="btn btn-sm btn-secondary">Editar</a>
+                <form action="/products/<%= p._id %>/delete" method="POST" style="display:inline"
+                      onsubmit="return confirm('Tens a certeza que queres eliminar este produto?')">
+                  <button class="btn btn-sm btn-danger">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
   </main>
   <%- include('../partials/footer') %>
 </body>

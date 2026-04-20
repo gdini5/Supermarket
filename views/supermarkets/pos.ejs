@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Venda em Caixa — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">Venda em Caixa (POS)</h1>
+
+    <% if (error)   { %><div class="alert alert-error" style="margin-bottom:1rem">⚠ <%= error %></div><% } %>
+    <% if (success) { %><div class="alert alert-info"  style="margin-bottom:1rem">✓ <%= success %></div><% } %>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start">
+
+      <!-- ── Produtos disponíveis ─────────────────────────────────────── -->
+      <div>
+        <div class="card" style="margin-bottom:1.25rem">
+          <input type="text" id="searchProd" placeholder="Pesquisar produto..."
+            style="width:100%;padding:.6rem .9rem;background:var(--bg-3);border:1px solid var(--border);
+                   border-radius:8px;color:var(--text);font-size:.95rem;outline:none;
+                   transition:border-color .15s">
+        </div>
+
+        <% if (products.length === 0) { %>
+          <p class="empty-state">Nenhum produto com stock disponível.</p>
+        <% } else { %>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem" id="productGrid">
+            <% products.forEach(p => { %>
+              <div class="card pos-card" data-name="<%= p.name.toLowerCase() %>"
+                style="padding:.9rem;display:flex;flex-direction:column;gap:.5rem;cursor:default">
+                <img src="/images/uploads/<%= p.image %>" alt="<%= p.name %>"
+                  style="width:100%;height:100px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"
+                  onerror="this.src='/images/uploads/default-product.png'">
+                <strong style="font-size:.875rem;line-height:1.3"><%= p.name %></strong>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">
+                  <span style="font-weight:700;color:var(--cyan)"><%= p.price.toFixed(2) %> €</span>
+                  <span style="font-size:.75rem;color:var(--text-3)"><%= p.stock %> un.</span>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm add-to-sale-btn"
+                  data-id="<%= p._id %>"
+                  data-name="<%= p.name %>"
+                  data-price="<%= p.price %>"
+                  data-stock="<%= p.stock %>">
+                  + Adicionar
+                </button>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- ── Formulário da venda ──────────────────────────────────────── -->
+      <div class="card" style="position:sticky;top:80px">
+        <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:1.25rem">
+          Registar venda
+        </h3>
+
+        <form action="/supermarket/pos/sale" method="POST" id="saleForm" novalidate>
+
+          <div class="form-group">
+            <label for="clientEmail">Email do cliente</label>
+            <input type="email" id="clientEmail" name="clientEmail"
+              required placeholder="cliente@email.pt">
+            <p class="field-msg" id="clientEmailMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="clientName">
+              Nome
+              <span style="color:var(--text-3);font-weight:400">(se novo cliente)</span>
+            </label>
+            <input type="text" id="clientName" name="clientName" placeholder="João Silva">
+            <p class="field-msg" id="clientNameMsg"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="clientPhone">
+              Telefone
+              <span style="color:var(--text-3);font-weight:400">(se novo cliente)</span>
+            </label>
+            <input type="tel" id="clientPhone" name="clientPhone" placeholder="9XXXXXXXX">
+            <p class="field-msg" id="clientPhoneMsg"></p>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:1rem;margin:1rem 0">
+            <p style="font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">
+              Produtos selecionados
+            </p>
+            <div id="saleItems" style="min-height:50px">
+              <p id="emptyMsg" style="color:var(--text-3);font-size:.85rem;text-align:center;padding:.75rem">
+                Adiciona produtos da lista.
+              </p>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:.75rem;margin-top:.5rem;
+                        display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--text-2);font-size:.9rem">Total</span>
+              <strong id="totalDisplay" style="font-size:1.1rem">0.00 €</strong>
+            </div>
+          </div>
+
+          <div id="hiddenItems"></div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="saleBtn" disabled>
+            Registar venda
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+
+  <script>
+    // ── Regex de validação ────────────────────────────────────────────────────
+    const emailRe = /^[^\s@]+@[a-zA-Z]+(\.[a-zA-Z]+)+$/;
+    const nameRe  = /^[a-zA-ZÀ-ÿ\s\-']+$/;
+    const phoneRe = /^[9][1236]\d{7}$/;
+
+    function setMsg(id, input, type, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'field-msg' + (text ? ' ' + type : '');
+      if (input) {
+        input.classList.remove('input-valid', 'input-invalid');
+        if (type === 'ok')  input.classList.add('input-valid');
+        if (type === 'err') input.classList.add('input-invalid');
+      }
+    }
+
+    // ── Validação dos campos do cliente ───────────────────────────────────────
+    const emailInput = document.getElementById('clientEmail');
+    const nameInput  = document.getElementById('clientName');
+    const phoneInput = document.getElementById('clientPhone');
+
+    emailInput.addEventListener('blur', () => {
+      const v = emailInput.value.trim();
+      if (!v)                   setMsg('clientEmailMsg', emailInput, 'err', '✕ Campo obrigatório');
+      else if (!emailRe.test(v)) setMsg('clientEmailMsg', emailInput, 'err', '✕ Formato inválido (ex: a@b.pt)');
+      else                      setMsg('clientEmailMsg', emailInput, 'ok',  '✓ Email válido');
+    });
+    emailInput.addEventListener('input', () => {
+      if (document.getElementById('clientEmailMsg').classList.contains('err') && emailRe.test(emailInput.value.trim()))
+        setMsg('clientEmailMsg', emailInput, 'ok', '✓ Email válido');
+    });
+
+    nameInput.addEventListener('blur', () => {
+      const v = nameInput.value.trim();
+      if (!v) { setMsg('clientNameMsg', nameInput, '', ''); return; }
+      if (v.length < 3 || !nameRe.test(v))
+        setMsg('clientNameMsg', nameInput, 'err', '✕ Nome inválido (só letras, mín. 3)');
+      else
+        setMsg('clientNameMsg', nameInput, 'ok', '✓');
+    });
+
+    phoneInput.addEventListener('blur', () => {
+      const v = phoneInput.value.trim();
+      if (!v) { setMsg('clientPhoneMsg', phoneInput, '', ''); return; }
+      if (!phoneRe.test(v)) setMsg('clientPhoneMsg', phoneInput, 'err', '✕ Número inválido (ex: 912345678)');
+      else                  setMsg('clientPhoneMsg', phoneInput, 'ok', '✓');
+    });
+
+    // ── Lógica do carrinho POS ────────────────────────────────────────────────
+    let saleCart = {};
+
+    function addToSale(id, name, price, stock) {
+      if (saleCart[id]) {
+        if (saleCart[id].qty >= stock) { alert('Stock máximo atingido para este produto.'); return; }
+        saleCart[id].qty++;
+      } else {
+        saleCart[id] = { name, price, qty: 1, stock };
+      }
+      renderSale();
+    }
+
+    function removeFromSale(id) {
+      delete saleCart[id];
+      renderSale();
+    }
+
+    function changeQty(id, delta) {
+      if (!saleCart[id]) return;
+      saleCart[id].qty += delta;
+      if (saleCart[id].qty <= 0) return removeFromSale(id);
+      if (saleCart[id].qty > saleCart[id].stock) saleCart[id].qty = saleCart[id].stock;
+      renderSale();
+    }
+
+    function renderSale() {
+      const container = document.getElementById('saleItems');
+      const hidden    = document.getElementById('hiddenItems');
+      const emptyMsg  = document.getElementById('emptyMsg');
+      const saleBtn   = document.getElementById('saleBtn');
+      const ids       = Object.keys(saleCart);
+
+      if (ids.length === 0) {
+        container.innerHTML = '';
+        container.appendChild(emptyMsg);
+        emptyMsg.style.display = '';
+        hidden.innerHTML = '';
+        document.getElementById('totalDisplay').textContent = '0.00 €';
+        saleBtn.disabled = true;
+        return;
+      }
+
+      emptyMsg.style.display = 'none';
+      let html = '', hiddenHtml = '', total = 0;
+
+      ids.forEach(id => {
+        const item = saleCart[id];
+        const sub  = item.price * item.qty;
+        total += sub;
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;
+                             padding:.4rem 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:.83rem;flex:1;margin-right:.4rem">${item.name}</span>
+          <div style="display:flex;align-items:center;gap:.25rem;flex-shrink:0">
+            <button type="button" onclick="changeQty('${id}',-1)"
+              style="background:var(--bg-4);border:1px solid var(--border);color:var(--text);
+                     border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:.85rem;line-height:1">−</button>
+            <span style="font-size:.83rem;min-width:18px;text-align:center">${item.qty}</span>
+            <button type="button" onclick="changeQty('${id}',1)"
+              style="background:var(--bg-4);border:1px solid var(--border);color:var(--text);
+                     border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:.85rem;line-height:1">+</button>
+            <span style="font-size:.8rem;min-width:46px;text-align:right">${sub.toFixed(2)} €</span>
+            <button type="button" onclick="removeFromSale('${id}')"
+              style="background:none;border:none;color:var(--red);cursor:pointer;
+                     font-size:.9rem;padding:0 .15rem;margin-left:.15rem">✕</button>
+          </div>
+        </div>`;
+        hiddenHtml += `<input type="hidden" name="items[][productId]" value="${id}">
+                       <input type="hidden" name="items[][quantity]"  value="${item.qty}">`;
+      });
+
+      container.innerHTML = html;
+      hidden.innerHTML    = hiddenHtml;
+      document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' €';
+      saleBtn.disabled = false;
+    }
+
+    // ── Event delegation para botões "Adicionar" ──────────────────────────────
+    document.getElementById('productGrid')?.addEventListener('click', e => {
+      const btn = e.target.closest('.add-to-sale-btn');
+      if (!btn) return;
+      addToSale(btn.dataset.id, btn.dataset.name, parseFloat(btn.dataset.price), parseInt(btn.dataset.stock));
+    });
+
+    // ── Pesquisa de produtos ──────────────────────────────────────────────────
+    document.getElementById('searchProd').addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.pos-card').forEach(card => {
+        card.style.display = card.dataset.name.includes(q) ? '' : 'none';
+      });
+    });
+
+    // ── Validação ao submeter ─────────────────────────────────────────────────
+    document.getElementById('saleForm').addEventListener('submit', e => {
+      let ok = true;
+      const email = emailInput.value.trim();
+      if (!email || !emailRe.test(email)) {
+        setMsg('clientEmailMsg', emailInput, 'err', '✕ Email obrigatório e válido');
+        ok = false;
+      }
+      const name  = nameInput.value.trim();
+      const phone = phoneInput.value.trim();
+      if (name  && (name.length < 3 || !nameRe.test(name)))   { setMsg('clientNameMsg',  nameInput,  'err', '✕ Nome inválido');  ok = false; }
+      if (phone && !phoneRe.test(phone))                       { setMsg('clientPhoneMsg', phoneInput, 'err', '✕ Número inválido'); ok = false; }
+      if (Object.keys(saleCart).length === 0) {
+        alert('Adiciona pelo menos um produto à venda.');
+        ok = false;
+      }
+      if (!ok) e.preventDefault();
+    });
+  </script>
+</body>
+</html>

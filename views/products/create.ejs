@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novo Produto — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+      <a href="/products" class="btn btn-secondary btn-sm">← Voltar</a>
+      <h1 class="page-title" style="margin:0">Novo Produto</h1>
+    </div>
+
+    <div class="card" style="max-width:640px">
+      <% if (error) { %>
+        <div class="alert alert-error" style="margin-bottom:1.25rem">⚠ <%= error %></div>
+      <% } %>
+
+      <form id="createForm" action="/products/create" method="POST"
+            enctype="multipart/form-data" novalidate>
+
+        <div class="form-group">
+          <label for="name">Nome do produto</label>
+          <input type="text" id="name" name="name"
+            placeholder="Ex: Leite Meio-Gordo 1L" required>
+          <p class="field-msg" id="nameMsg"></p>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Descrição
+            <span style="color:var(--text-3);font-weight:400">(opcional)</span>
+          </label>
+          <textarea id="description" name="description" rows="3"
+            placeholder="Breve descrição do produto..."
+            style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .9rem;color:var(--text);font-family:inherit;font-size:.9rem;resize:vertical"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoria</label>
+          <select id="category" name="category" required>
+            <option value="">Seleciona uma categoria...</option>
+            <% categories.forEach(c => { %>
+              <option value="<%= c %>"><%= c %></option>
+            <% }) %>
+          </select>
+          <p class="field-msg" id="categoryMsg"></p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group">
+            <label for="price">Preço (€)</label>
+            <input type="number" id="price" name="price"
+              step="0.01" min="0" placeholder="0.00" required>
+            <p class="field-msg" id="priceMsg"></p>
+          </div>
+          <div class="form-group">
+            <label for="stock">Stock (unidades)</label>
+            <input type="number" id="stock" name="stock"
+              min="0" placeholder="0" required>
+            <p class="field-msg" id="stockMsg"></p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Imagem do produto
+            <span style="color:var(--text-3);font-weight:400">(opcional)</span>
+          </label>
+          <input type="file" id="image" name="image" accept="image/*"
+            style="color:var(--text-2)">
+          <p style="font-size:.78rem;color:var(--text-3);margin-top:.3rem">
+            Máx. 2 MB. Se não enviares imagem, será usada a imagem por defeito.
+          </p>
+        </div>
+
+        <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+          <button type="submit" class="btn btn-primary" id="submitBtn">Guardar produto</button>
+          <a href="/products" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+
+  <script>
+    function setMsg(id, input, type, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'field-msg' + (text ? ' ' + type : '');
+      if (input) {
+        input.classList.remove('input-valid', 'input-invalid');
+        if (type === 'ok')  input.classList.add('input-valid');
+        if (type === 'err') input.classList.add('input-invalid');
+      }
+    }
+
+    const nameInput     = document.getElementById('name');
+    const categoryInput = document.getElementById('category');
+    const priceInput    = document.getElementById('price');
+    const stockInput    = document.getElementById('stock');
+
+    nameInput.addEventListener('blur', () => {
+      if (!nameInput.value.trim()) setMsg('nameMsg', nameInput, 'err', '✕ Campo obrigatório');
+      else                         setMsg('nameMsg', nameInput, 'ok',  '✓');
+    });
+
+    categoryInput.addEventListener('change', () => {
+      if (!categoryInput.value) setMsg('categoryMsg', categoryInput, 'err', '✕ Seleciona uma categoria');
+      else                      setMsg('categoryMsg', categoryInput, 'ok',  '✓');
+    });
+
+    priceInput.addEventListener('blur', () => {
+      const v = parseFloat(priceInput.value);
+      if (isNaN(v) || v < 0) setMsg('priceMsg', priceInput, 'err', '✕ Preço inválido');
+      else                   setMsg('priceMsg', priceInput, 'ok',  '✓');
+    });
+
+    stockInput.addEventListener('blur', () => {
+      const v = parseInt(stockInput.value);
+      if (isNaN(v) || v < 0) setMsg('stockMsg', stockInput, 'err', '✕ Stock inválido');
+      else                   setMsg('stockMsg', stockInput, 'ok',  '✓');
+    });
+
+    document.getElementById('createForm').addEventListener('submit', e => {
+      let ok = true;
+      if (!nameInput.value.trim())               { setMsg('nameMsg',     nameInput,     'err', '✕ Campo obrigatório');       ok = false; }
+      if (!categoryInput.value)                  { setMsg('categoryMsg', categoryInput, 'err', '✕ Seleciona uma categoria'); ok = false; }
+      if (isNaN(parseFloat(priceInput.value)))   { setMsg('priceMsg',    priceInput,    'err', '✕ Preço inválido');         ok = false; }
+      if (isNaN(parseInt(stockInput.value)))     { setMsg('stockMsg',    stockInput,    'err', '✕ Stock inválido');         ok = false; }
+      if (!ok) { e.preventDefault(); return; }
+      document.getElementById('submitBtn').textContent = 'A guardar…';
+    });
+  </script>
+</body>
+</html>

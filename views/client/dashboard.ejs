@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A minha conta — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">
+      <% if (currentName) { %>Olá, <%= currentName.split(' ')[0] %>! 👋<% } else { %>A minha conta<% } %>
+    </h1>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">📦</span>
+        <span class="stat-number"><%= totalOrders %></span>
+        <span class="stat-label">Encomendas realizadas</span>
+      </div>
+      <div class="stat-card stat-card--warning">
+        <span class="stat-icon">🚴</span>
+        <span class="stat-number"><%= activeOrders %></span>
+        <span class="stat-label">Em curso</span>
+        <% if (activeOrders > 0) { %>
+          <a href="/orders" class="btn btn-warning btn-sm" style="margin-top:.5rem">Ver agora</a>
+        <% } %>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💶</span>
+        <span class="stat-number"><%= totalSpent.toFixed(2) %> €</span>
+        <span class="stat-label">Total gasto</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem">
+
+      <!-- Produtos mais comprados -->
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:.9rem;margin-bottom:1rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em">
+          Produtos mais comprados
+        </h3>
+        <% if (topProducts.length === 0) { %>
+          <p style="color:var(--text-3);font-size:.875rem">Ainda sem compras registadas.</p>
+        <% } else { %>
+          <% topProducts.forEach((p, i) => { %>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:.875rem;color:var(--text-2)">
+                <span style="color:var(--text-3);margin-right:.4rem"><%= i+1 %>.</span>
+                <%= p._id %>
+              </span>
+              <span class="badge badge--neutral"><%= p.total %> un.</span>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+
+      <!-- Encomendas recentes -->
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:.9rem;margin-bottom:1rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em">
+          Encomendas recentes
+        </h3>
+        <%
+          const statusMap = {
+            pending:'⏳ Pendente', confirmed:'✅ Confirmada', preparing:'👨‍🍳 Preparação',
+            delivering:'🚴 Em entrega', delivered:'📦 Entregue', cancelled:'✕ Cancelada'
+          };
+          const statusClass = {
+            pending:'badge--warning', confirmed:'badge--success', preparing:'badge--warning',
+            delivering:'badge--neutral', delivered:'badge--success', cancelled:'badge--danger'
+          };
+        %>
+        <% if (recentOrders.length === 0) { %>
+          <p style="color:var(--text-3);font-size:.875rem">Ainda sem encomendas.</p>
+        <% } else { %>
+          <% recentOrders.forEach(o => { %>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border)">
+              <div>
+                <p style="font-size:.875rem;font-weight:600;margin-bottom:.1rem"><%= o.supermarketId?.name || '—' %></p>
+                <p style="font-size:.78rem;color:var(--text-3)"><%= o.total.toFixed(2) %> €</p>
+              </div>
+              <a href="/orders/<%= o._id %>" style="text-decoration:none">
+                <span class="badge <%= statusClass[o.status] %>"><%= statusMap[o.status] %></span>
+              </a>
+            </div>
+          <% }) %>
+          <a href="/orders" class="btn btn-secondary btn-sm" style="margin-top:1rem">
+            Ver todas as encomendas
+          </a>
+        <% } %>
+      </div>
+
+    </div>
+
+    <div class="quick-links" style="margin-top:1.25rem">
+      <h2>Ações rápidas</h2>
+      <a href="/orders/shop" class="btn btn-primary">🛒 Ir às compras</a>
+      <a href="/orders/cart" class="btn btn-secondary">Ver carrinho</a>
+      <a href="/orders"      class="btn btn-secondary">Encomendas</a>
+    </div>
+
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

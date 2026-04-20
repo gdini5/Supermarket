@@ -2,14 +2,91 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Encomendas — Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
   <%- include('../partials/navbar') %>
   <main class="container">
     <h1 class="page-title">Encomendas</h1>
-    <div class="alert alert-info">🚧 Módulo em desenvolvimento — Membro C.</div>
+
+    <div class="toolbar">
+      <form action="/orders" method="GET" class="search-form">
+        <select name="status">
+          <option value="">Todos os estados</option>
+          <% Object.values(ORDER_STATUS).forEach(s => { %>
+            <%
+              const labels = {
+                pending:'⏳ Pendente', confirmed:'✅ Confirmada', preparing:'👨‍🍳 Em preparação',
+                delivering:'🚴 Em entrega', delivered:'📦 Entregue', cancelled:'✕ Cancelada'
+              };
+            %>
+            <option value="<%= s %>" <%= status === s ? 'selected' : '' %>>
+              <%= labels[s] || s %>
+            </option>
+          <% }) %>
+        </select>
+        <button type="submit" class="btn btn-secondary">Filtrar</button>
+        <% if (status) { %>
+          <a href="/orders" class="btn btn-secondary">Limpar</a>
+        <% } %>
+      </form>
+    </div>
+
+    <% if (orders.length === 0) { %>
+      <p class="empty-state">Nenhuma encomenda encontrada.</p>
+    <% } else { %>
+      <%
+        const statusMap = {
+          pending:'⏳ Pendente', confirmed:'✅ Confirmada', preparing:'👨‍🍳 Em preparação',
+          delivering:'🚴 Em entrega', delivered:'📦 Entregue', cancelled:'✕ Cancelada'
+        };
+        const statusClass = {
+          pending:'badge--warning', confirmed:'badge--success', preparing:'badge--warning',
+          delivering:'badge--neutral', delivered:'badge--success', cancelled:'badge--danger'
+        };
+      %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Supermercado</th>
+            <th>Total</th>
+            <th>Entrega</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(o => { %>
+            <tr>
+              <td style="font-family:monospace;font-size:.78rem;color:var(--text-3)">
+                #<%= o._id.toString().slice(-6).toUpperCase() %>
+              </td>
+              <td><%= o.clientId?.name || '—' %></td>
+              <td><%= o.supermarketId?.name || '—' %></td>
+              <td><strong><%= o.total.toFixed(2) %> €</strong></td>
+              <td>
+                <span class="badge badge--neutral">
+                  <%= o.deliveryMethod === 'pickup' ? '🏪 Loja' : '🚴 Estafeta' %>
+                </span>
+              </td>
+              <td>
+                <span class="badge <%= statusClass[o.status] %>">
+                  <%= statusMap[o.status] %>
+                </span>
+              </td>
+              <td>
+                <a href="/orders/<%= o._id %>" class="btn btn-sm btn-secondary">Ver</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
   </main>
   <%- include('../partials/footer') %>
 </body>

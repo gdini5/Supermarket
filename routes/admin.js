@@ -1,6 +1,6 @@
 const express         = require('express');
 const router          = express.Router();
-const AdminController = require('../controllers/adminController');
+const AdminController = require('../controllers/AdminController');
 
 router.get('/dashboard',                    AdminController.dashboard);
 router.get('/supermarkets',                 AdminController.listSupermarkets);

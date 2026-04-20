@@ -10,8 +10,15 @@ AuthController.showRegister = (req, res) => {
  
 AuthController.register = async (req, res) => {
   try {
-    const { name, email, password, address, phone, role,
+    const { name, email, password, confirm, address, phone, role,
             shopName, shopAddress, schedule, vehicle } = req.body;
+ 
+    // Validação server-side: confirmar password (defesa contra POST directo)
+    if (password !== confirm)
+      return res.render('auth/register', { error: 'As passwords não coincidem.' });
+ 
+    if (password.length < 6)
+      return res.render('auth/register', { error: 'A password deve ter pelo menos 6 caracteres.' });
  
     const existing = await User.findOne({ email });
     if (existing)
@@ -20,24 +27,22 @@ AuthController.register = async (req, res) => {
     const user = new User({ name, email, password, address, phone, role });
     await user.save();
  
-    // Supermercado: criar o documento Supermarket associado (pendente de aprovação)
+    // Supermercado: criar documento Supermarket associado (pendente de aprovação)
     if (role === 'supermarket') {
-      const sm = new Supermarket({
-        userId:      user._id,
-        name:        shopName    || name,
-        address:     shopAddress || address,
-        schedule:    schedule    || '',
-        approved:    false,
-        active:      true,
-      });
-      await sm.save();
+      await new Supermarket({
+        userId:   user._id,
+        name:     shopName    || name,
+        address:  shopAddress || address,
+        schedule: schedule    || '',
+        approved: false,
+        active:   true,
+      }).save();
     }
  
-    // Estafeta: guardar veículo no perfil (campo extra opcional)
-    // Pode ser expandido pelo Membro C quando implementar o módulo de estafetas
- 
-    req.session.userId = user._id;
-    req.session.role   = user.role;
+    // Guardar sessão completa incluindo userName para a navbar
+    req.session.userId   = user._id;
+    req.session.role     = user.role;
+    req.session.userName = user.name;
     res.redirect('/');
   } catch (err) {
     console.error(err);
@@ -61,12 +66,15 @@ AuthController.login = async (req, res) => {
     if (!user.active)
       return res.render('auth/login', { error: 'Esta conta está desativada.' });
  
-    req.session.userId = user._id;
-    req.session.role   = user.role;
+    // Guardar sessão completa incluindo userName para a navbar
+    req.session.userId   = user._id;
+    req.session.role     = user.role;
+    req.session.userName = user.name;
  
-    if (user.role === 'admin')       return res.redirect('/admin/dashboard');
-    if (user.role === 'supermarket') return res.redirect('/supermarket/dashboard');
-    res.redirect('/orders');
+    if (user.role === 'admin')        return res.redirect('/admin/dashboard');
+    if (user.role === 'supermarket')  return res.redirect('/supermarket/dashboard');
+    if (user.role === 'courier')      return res.redirect('/courier/dashboard');
+    res.redirect('/client/dashboard');
   } catch (err) {
     console.error(err);
     res.render('auth/login', { error: 'Erro ao autenticar. Tenta novamente.' });
