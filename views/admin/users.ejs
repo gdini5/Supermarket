@@ -16,36 +16,29 @@
     <% } else { %>
       <table class="table">
         <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th>Registado em</th>
-            <th>Ações</th>
-          </tr>
+          <tr><th>Nome</th><th>Email</th><th>Tipo</th><th>Estado</th><th>Registado em</th><th>Ações</th></tr>
         </thead>
         <tbody>
           <% users.forEach(u => { %>
             <tr>
               <td><%= u.name %></td>
               <td><%= u.email %></td>
+              <td><span class="badge badge--neutral"><%= u.role %></span></td>
               <td>
-                <span class="badge badge--neutral"><%= u.role %></span>
-              </td>
-              <td>
-                <% if (u.active) { %>
-                  <span class="badge badge--success">Ativo</span>
-                <% } else { %>
-                  <span class="badge badge--danger">Inativo</span>
-                <% } %>
+                <span class="badge <%= u.active ? 'badge--success' : 'badge--danger' %>">
+                  <%= u.active ? 'Ativo' : 'Inativo' %>
+                </span>
               </td>
               <td><%= u.createdAt.toLocaleDateString('pt-PT') %></td>
-              <td>
-                <form action="/admin/users/<%= u._id %>/toggle" method="POST">
-                  <button class="btn btn-sm <%= u.active ? 'btn-danger' : 'btn-success' %>">
+              <td class="actions">
+                <form action="/admin/users/<%= u._id %>/toggle" method="POST" style="display:inline">
+                  <button class="btn btn-sm <%= u.active ? 'btn-warning' : 'btn-success' %>">
                     <%= u.active ? 'Desativar' : 'Ativar' %>
                   </button>
+                </form>
+                <form action="/admin/users/<%= u._id %>/delete" method="POST" style="display:inline"
+                      onsubmit="return confirm('Eliminar o utilizador \'<%= u.name %>\'? Esta ação é irreversível.')">
+                  <button class="btn btn-sm btn-danger">Eliminar</button>
                 </form>
               </td>
             </tr>

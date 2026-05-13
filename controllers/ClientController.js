@@ -1,3 +1,16 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ClientController.js — Dashboard do cliente
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * dashboard — agrega 5 indicadores num só pedido (via Promise.all):
+ *   1. Total de encomendas do cliente (req. 9a.i)
+ *   2. Encomendas ativas (pending/confirmed/preparing/delivering)
+ *   3. Total gasto em encomendas entregues (agregação sum($total))
+ *   4. Top 5 produtos mais comprados (agregação unwind+group)   (req. 9a.ii)
+ *   5. 5 encomendas mais recentes com nome do supermercado
+ */
+
 const Order          = require('../models/Order');
 const { ORDER_STATUS } = require('../models/Order');
  
@@ -32,8 +45,7 @@ ClientController.dashboard = async (req, res) => {
       activeOrders,
       totalSpent:   spentAgg[0]?.total || 0,
       topProducts,
-      recentOrders,
-      ORDER_STATUS
+      recentOrders
     });
   } catch (err) {
     console.error(err);

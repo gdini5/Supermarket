@@ -1,15 +1,7 @@
 const mongoose = require('mongoose');
  
-// PRODUCT_CATEGORIES é exclusivo deste modelo — fica aqui
-const PRODUCT_CATEGORIES = [
-  'Frutas e Legumes',
-  'Carne',
-  'Peixe',
-  'Bebidas',
-  'Produtos de Limpeza',
-  'Padaria',
-  'Outros',
-];
+// Unidades de preço suportadas
+const PRICE_UNITS = ['un.', 'kg', 'lt', 'cx'];
  
 const ProductSchema = new mongoose.Schema({
   supermarketId: {
@@ -19,12 +11,14 @@ const ProductSchema = new mongoose.Schema({
   },
   name:        { type: String, required: true, trim: true },
   description: { type: String, trim: true },
-  category:    { type: String, required: true, enum: PRODUCT_CATEGORIES },
+  // category agora é string livre (vem do modelo Category gerido pelo admin)
+  category:    { type: String, required: true, trim: true },
   price:       { type: Number, required: true, min: 0 },
+  priceUnit:   { type: String, enum: PRICE_UNITS, default: 'un.' },
   stock:       { type: Number, required: true, min: 0, default: 0 },
   image:       { type: String, default: 'default-product.png' },
   active:      { type: Boolean, default: true },
 }, { timestamps: true });
  
-module.exports                    = mongoose.model('Product', ProductSchema);
-module.exports.PRODUCT_CATEGORIES = PRODUCT_CATEGORIES;
+module.exports            = mongoose.model('Product', ProductSchema);
+module.exports.PRICE_UNITS = PRICE_UNITS;

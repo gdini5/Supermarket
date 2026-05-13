@@ -1,0 +1,483 @@
+# REST Client (VSCode extension: humao.rest-client)
+# Variáveis: defini @token após fazer login
+# Instalar extensão: https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+@base = http://localhost:3000/api/v1
+@token = SUBSTITUIR_PELO_TOKEN_DO_LOGIN
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HEALTH
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Health check
+GET {{base}}/health
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTH
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Registar utilizador (cliente)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ana Silva",
+  "email": "ana@teste.pt",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua das Flores 10, Porto",
+  "phone": "912345678",
+  "role": "client"
+}
+
+###
+
+### Registar supermercado
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "João Dono",
+  "email": "supermercado@teste.pt",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Av. da República 20, Porto",
+  "phone": "912345679",
+  "role": "supermarket",
+  "shopName": "Super João",
+  "shopAddress": "Av. da República 20, Porto",
+  "schedule": "Seg-Sex 8h-20h"
+}
+
+###
+
+### ERRO: passwords não coincidem
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Teste",
+  "email": "teste@erro.pt",
+  "password": "abc123",
+  "confirm": "xyz999",
+  "address": "Rua X",
+  "phone": "911111111",
+  "role": "client"
+}
+
+###
+
+### ERRO: tentar criar admin via API pública (deve ser criado como client)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Hacker",
+  "email": "hacker@teste.pt",
+  "password": "hack123",
+  "confirm": "hack123",
+  "address": "Rua Hack 1",
+  "phone": "900000000",
+  "role": "admin"
+}
+
+###
+
+### Login admin
+# @name loginAdmin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@marketplace.pt",
+  "password": "admin123"
+}
+
+###
+
+### Login cliente
+# @name loginClient
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@teste.pt",
+  "password": "senha123"
+}
+
+###
+
+### ERRO: credenciais inválidas
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "naoexiste@teste.pt",
+  "password": "errada"
+}
+
+###
+
+### Dados do utilizador autenticado
+GET {{base}}/auth/me
+Authorization: Bearer {{token}}
+
+###
+
+### Logout
+POST {{base}}/auth/logout
+Authorization: Bearer {{token}}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CATEGORIAS (público)
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Listar categorias ativas
+GET {{base}}/categories
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SUPERMERCADOS (público)
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Listar supermercados aprovados
+GET {{base}}/supermarkets
+
+###
+
+### Detalhe de supermercado
+GET {{base}}/supermarkets/SUBSTITUIR_POR_ID
+
+###
+
+### Produtos de um supermercado
+GET {{base}}/supermarkets/SUBSTITUIR_POR_ID/products
+
+###
+
+### Produtos de supermercado filtrados por categoria
+GET {{base}}/supermarkets/SUBSTITUIR_POR_ID/products?category=Frutas&sort=price_asc
+
+###
+
+### ERRO: ID inválido
+GET {{base}}/supermarkets/id_invalido
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PRODUTOS (público)
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Listar todos os produtos disponíveis
+GET {{base}}/products
+
+###
+
+### Pesquisa por nome
+GET {{base}}/products?search=leite&sort=price_asc
+
+###
+
+### Filtrar por categoria
+GET {{base}}/products?category=Lacticínios&page=1&limit=10
+
+###
+
+### Paginação
+GET {{base}}/products?page=2&limit=5
+
+###
+
+### Comparar preços de produto
+GET {{base}}/products/compare?name=Leite
+
+###
+
+### ERRO: comparar sem parâmetro name
+GET {{base}}/products/compare
+
+###
+
+### Detalhe de produto
+GET {{base}}/products/SUBSTITUIR_POR_ID
+
+###
+
+### ERRO: ID inválido
+GET {{base}}/products/abc123
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CARRINHO (requer auth como client)
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Ver carrinho
+GET {{base}}/cart
+Authorization: Bearer {{token}}
+
+###
+
+### Adicionar produto ao carrinho
+POST {{base}}/cart/add/SUBSTITUIR_POR_ID_PRODUTO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 2
+}
+
+###
+
+### ERRO: produto de supermercado diferente (segundo add)
+POST {{base}}/cart/add/SUBSTITUIR_POR_ID_PRODUTO_OUTRO_SM
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+###
+
+### Atualizar quantidade
+PUT {{base}}/cart/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": "SUBSTITUIR_POR_ID_PRODUTO",
+  "quantity": 3
+}
+
+###
+
+### Remover item (quantity=0)
+PUT {{base}}/cart/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": "SUBSTITUIR_POR_ID_PRODUTO",
+  "quantity": 0
+}
+
+###
+
+### Limpar carrinho
+DELETE {{base}}/cart/clear
+Authorization: Bearer {{token}}
+
+###
+
+### ERRO: carrinho sem auth
+GET {{base}}/cart
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENCOMENDAS
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Listar encomendas (resultado depende do role)
+GET {{base}}/orders
+Authorization: Bearer {{token}}
+
+###
+
+### Listar encomendas filtradas por estado
+GET {{base}}/orders?status=pending
+Authorization: Bearer {{token}}
+
+###
+
+### Criar encomenda (checkout) — precisa de carrinho preenchido
+POST {{base}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "deliveryMethod": "pickup"
+}
+
+###
+
+### Checkout com courier
+POST {{base}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "deliveryMethod": "courier"
+}
+
+###
+
+### Detalhe de encomenda
+GET {{base}}/orders/SUBSTITUIR_POR_ID
+Authorization: Bearer {{token}}
+
+###
+
+### ERRO: acesso a encomenda de outro utilizador (IDOR)
+GET {{base}}/orders/SUBSTITUIR_POR_ID_ALHEIO
+Authorization: Bearer {{token}}
+
+###
+
+### Atualizar estado (supermercado: confirmar)
+PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "confirmed"
+}
+
+###
+
+### Atualizar estado (supermercado: em preparação)
+PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "preparing"
+}
+
+###
+
+### Atualizar estado (courier: a entregar)
+PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "delivering"
+}
+
+###
+
+### Atualizar estado (courier: entregue)
+PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "delivered"
+}
+
+###
+
+### Cancelar encomenda (cliente — só nos primeiros 5 min)
+PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "cancelled"
+}
+
+###
+
+### ERRO: cliente tenta confirmar (role não permitido)
+PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "confirmed"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADMIN
+# ─────────────────────────────────────────────────────────────────────────────
+
+### Dashboard de estatísticas
+GET {{base}}/admin/dashboard
+Authorization: Bearer {{token}}
+
+###
+
+### Listar todos os supermercados
+GET {{base}}/admin/supermarkets
+Authorization: Bearer {{token}}
+
+###
+
+### Aprovar supermercado
+PATCH {{base}}/admin/supermarkets/SUBSTITUIR_POR_ID/approve
+Authorization: Bearer {{token}}
+
+###
+
+### Rejeitar supermercado
+PATCH {{base}}/admin/supermarkets/SUBSTITUIR_POR_ID/reject
+Authorization: Bearer {{token}}
+
+###
+
+### Listar utilizadores
+GET {{base}}/admin/users
+Authorization: Bearer {{token}}
+
+###
+
+### Ativar/desativar utilizador
+PATCH {{base}}/admin/users/SUBSTITUIR_POR_ID/toggle
+Authorization: Bearer {{token}}
+
+###
+
+### Monitorizar encomendas (todas)
+GET {{base}}/admin/orders
+Authorization: Bearer {{token}}
+
+###
+
+### Monitorizar encomendas por estado
+GET {{base}}/admin/orders?status=pending
+Authorization: Bearer {{token}}
+
+###
+
+### Listar categorias (admin — inclui inativas)
+GET {{base}}/admin/categories
+Authorization: Bearer {{token}}
+
+###
+
+### Criar categoria
+POST {{base}}/admin/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bebidas"
+}
+
+###
+
+### ERRO: categoria duplicada
+POST {{base}}/admin/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bebidas"
+}
+
+###
+
+### Ativar/desativar categoria
+PATCH {{base}}/admin/categories/SUBSTITUIR_POR_ID/toggle
+Authorization: Bearer {{token}}
+
+###
+
+### Eliminar categoria
+DELETE {{base}}/admin/categories/SUBSTITUIR_POR_ID
+Authorization: Bearer {{token}}
+
+###
+
+### ERRO: acesso admin sem token
+GET {{base}}/admin/dashboard
+
+###
+
+### ERRO: acesso admin com token de cliente
+GET {{base}}/admin/dashboard
+Authorization: Bearer TOKEN_DE_CLIENTE_AQUI

@@ -6,6 +6,10 @@ const MongoStore     = require('connect-mongo');
 const methodOverride = require('method-override');
 const path           = require('path');
 const logger         = require('morgan');
+const cors           = require('cors');
+const helmet         = require('helmet');
+const swaggerUi      = require('swagger-ui-express');
+const swaggerSpec    = require('./config/swagger');
 
 // ── Ligação ao MongoDB (usa sempre o .env — nunca hardcode aqui) ──────────────
 mongoose.connect(process.env.MONGO_URI)
@@ -13,6 +17,19 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => { console.error('✘  Erro MongoDB:', err); process.exit(1); });
 
 const app = express();
+
+// ── Segurança e CORS (antes de tudo) ─────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false }));
+
+app.use(cors({
+  origin: [
+    'http://localhost:4200',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // ── View engine ───────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
@@ -42,6 +59,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── Swagger UI ────────────────────────────────────────────────────────────────
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // ── Rotas ─────────────────────────────────────────────────────────────────────
 const { requireRole } = require('./middleware/auth');
 
@@ -53,6 +73,9 @@ app.use('/products',    requireRole('supermarket', 'admin'),    require('./route
 app.use('/client',      requireRole('client'),                  require('./routes/client'));
 app.use('/courier',     requireRole('courier'),                 require('./routes/courier'));
 app.use('/orders',      require('./routes/orders'));
+
+// ── REST API ──────────────────────────────────────────────────────────────────
+app.use('/api/v1', require('./routes/api'));
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
