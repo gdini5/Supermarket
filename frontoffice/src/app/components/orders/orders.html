@@ -1,0 +1,55 @@
+<div class="orders-container">
+  <h1>As minhas Encomendas</h1>
+
+  @if (loading()) {
+    <div class="loading-state">A carregar histórico...</div>
+  } @else if (error()) {
+    <div class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (orders().length === 0) {
+    <mat-card class="empty-orders">
+      <mat-card-content>
+        <mat-icon>history</mat-icon>
+        <p>Ainda não realizou nenhuma encomenda.</p>
+        <button mat-raised-button color="primary" routerLink="/shop">Começar a Comprar</button>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="orders-list">
+      @for (order of orders(); track order._id) {
+        <mat-card class="order-card" [routerLink]="['/orders', order._id]">
+          <mat-card-content>
+            <div class="order-header">
+              <div class="order-meta">
+                <span class="order-id">#{{ order._id.slice(-6).toUpperCase() }}</span>
+                <span class="order-date">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <mat-chip [color]="getStatusColor(order.status)" selected>
+                {{ getStatusLabel(order.status) }}
+              </mat-chip>
+            </div>
+
+            <div class="order-body">
+              <div class="supermarket-info">
+                <mat-icon>store</mat-icon>
+                <span>{{ order.supermarketId?.name }}</span>
+              </div>
+              <div class="items-preview">
+                {{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'itens' }}
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="order-footer">
+              <span class="total-label">Total</span>
+              <span class="total-value">{{ order.total | currency:'EUR' }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

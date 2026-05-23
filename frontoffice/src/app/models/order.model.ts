@@ -1,7 +1,5 @@
-/* Estados possíveis de uma encomenda. */
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
 
-/* Snapshot do produto no momento da compra. */
 export interface OrderItem {
   productId: string;
   name: string;
@@ -9,12 +7,29 @@ export interface OrderItem {
   quantity: number;
 }
 
-/* Encomenda realizada pelo cliente. */
+export interface OrderClientRef {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+export interface OrderSupermarketRef {
+  _id: string;
+  name: string;
+  address?: string;
+}
+
+export interface OrderCourierRef {
+  _id: string;
+  name: string;
+  phone?: string;
+}
+
 export interface Order {
   _id: string;
-  clientId: any;        // populado com { name, email }
-  supermarketId: any;   // populado com { name, address, ... }
-  courierId?: any;      // populado com { name, phone } quando em entrega
+  clientId: OrderClientRef | null;
+  supermarketId: OrderSupermarketRef | null;
+  courierId?: OrderCourierRef | null;
   items: OrderItem[];
   total: number;
   deliveryMethod: 'pickup' | 'courier';

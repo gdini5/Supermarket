@@ -49,7 +49,7 @@ export class CartService {
 
   /** DELETE /cart/clear */
   clear(): Observable<Cart> {
-    return this.http.delete<Cart>(this.baseUrl).pipe(
+    return this.http.delete<Cart>(`${this.baseUrl}/clear`).pipe(
       tap(cart => this.updateSignals(cart))
     );
   }

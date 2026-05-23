@@ -17,12 +17,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isApiRequest = req.url.startsWith(environment.apiUrl);
 
-  if (token && isApiRequest) {
-    const authReq = req.clone({
+  // Pedidos externos (Nominatim, etc.) passam sem modificação.
+  if (!isApiRequest) return next(req);
+
+  // withCredentials envia o cookie de sessão necessário para o carrinho
+  // (o backend usa req.session.cart — sem o cookie a sessão fica vazia).
+  const base = req.clone({ withCredentials: true });
+
+  if (token) {
+    return next(base.clone({
       setHeaders: { Authorization: `Bearer ${token}` },
-    });
-    return next(authReq);
+    }));
   }
 
-  return next(req);
+  return next(base);
 };

@@ -11,7 +11,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 
 import { Product } from '../../models/product.model';
+import { Supermarket } from '../../models/supermarket.model';
 import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 
 /**
  * Detalhe de um produto. Para além das informações habituais, mostra a
@@ -47,6 +50,8 @@ import { ProductService } from '../../services/product.service';
 })
 export class ProductDetail implements OnInit {
   private readonly productService = inject(ProductService);
+  private readonly cartService = inject(CartService);
+  readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -79,8 +84,8 @@ export class ProductDetail implements OnInit {
   }
 
   /** Helper para obter o supermercado populado a partir do produto. */
-  supermarketOf(p: Product): { _id: string; name: string; address?: string; deliveryMethods?: any[] } | null {
-    if (typeof p.supermarketId === 'string') return null; // não populado
+  supermarketOf(p: Product): Pick<Supermarket, '_id' | 'name' | 'address' | 'deliveryMethods'> | null {
+    if (typeof p.supermarketId === 'string') return null;
     return p.supermarketId;
   }
 
@@ -122,15 +127,9 @@ export class ProductDetail implements OnInit {
     return comparedPrice - current;
   }
 
-  /**
-   * Placeholder do botão "Adicionar ao carrinho".
-   * O colega vai ligar isto ao CartService dele. Por agora avisa o utilizador.
-   *
-   * NOTA DE COORDENAÇÃO: quando o CartService existir, basta importar e chamar
-   *   this.cart.add(this.product()!, 1).subscribe(...)
-   */
   addToCart(): void {
-    // TODO (colega): integrar com CartService
-    alert('Carrinho ainda não implementado — funcionalidade do colega.');
+    const p = this.product();
+    if (!p) return;
+    this.cartService.add(p._id, 1).subscribe();
   }
 }

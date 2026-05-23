@@ -6,8 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { AuthService } from '../../../services/auth.service';
+import { CartService } from '../../../services/cart.service';
 
 /**
  * Toolbar principal. Mostra:
@@ -30,6 +32,7 @@ import { AuthService } from '../../../services/auth.service';
     MatMenuModule,
     MatDividerModule,
     MatTooltipModule,
+    MatBadgeModule,
   ],
   template: `
     <mat-toolbar color="primary" class="navbar">
@@ -50,7 +53,10 @@ import { AuthService } from '../../../services/auth.service';
       <span class="spacer"></span>
 
       @if (auth.isAuthenticated()) {
-        <a mat-icon-button routerLink="/cart" aria-label="Carrinho" matTooltip="Carrinho">
+        <a mat-icon-button routerLink="/cart" aria-label="Carrinho" matTooltip="Carrinho"
+           [matBadge]="cart.cartCount()"
+           [matBadgeHidden]="cart.cartCount() === 0"
+           matBadgeColor="warn">
           <mat-icon>shopping_cart</mat-icon>
         </a>
 
@@ -143,4 +149,5 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class Navbar {
   readonly auth = inject(AuthService);
+  readonly cart = inject(CartService);
 }
