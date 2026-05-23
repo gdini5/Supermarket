@@ -1,115 +1,116 @@
-<div class="shop-layout">
-  <!-- Barra lateral de filtros -->
+<div class="shop">
+  <!-- ─── Sidebar de filtros ─── -->
   <aside class="filters" [formGroup]="filterForm">
-    <h2>Filtros</h2>
+    <div class="filters-head">
+      <h2>Filtros</h2>
+      <button type="button" class="clear-link" (click)="clearFilters()">Limpar</button>
+    </div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Pesquisar produto</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput formControlName="search" placeholder="Ex.: leite, pão...">
-    </mat-form-field>
+    <label class="field">
+      <span class="field-label">Pesquisar</span>
+      <div class="input-wrap">
+        <mat-icon>search</mat-icon>
+        <input formControlName="search" placeholder="leite, pão, maçã…" autocomplete="off">
+      </div>
+    </label>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Categoria</mat-label>
-      <mat-select formControlName="category">
-        <mat-option value="">Todas as categorias</mat-option>
-        @for (c of categories(); track c._id) {
-          <mat-option [value]="c.name">{{ c.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <label class="field">
+      <span class="field-label">Categoria</span>
+      <div class="select-wrap">
+        <select formControlName="category">
+          <option value="">Todas</option>
+          @for (c of categories(); track c._id) {
+            <option [value]="c.name">{{ c.name }}</option>
+          }
+        </select>
+        <mat-icon>expand_more</mat-icon>
+      </div>
+    </label>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Supermercado</mat-label>
-      <mat-select formControlName="supermarketId">
-        <mat-option value="">Todos os supermercados</mat-option>
-        @for (s of supermarkets(); track s._id) {
-          <mat-option [value]="s._id">{{ s.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <label class="field">
+      <span class="field-label">Supermercado</span>
+      <div class="select-wrap">
+        <select formControlName="supermarketId">
+          <option value="">Todos</option>
+          @for (s of supermarkets(); track s._id) {
+            <option [value]="s._id">{{ s.name }}</option>
+          }
+        </select>
+        <mat-icon>expand_more</mat-icon>
+      </div>
+    </label>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Ordenar por preço</mat-label>
-      <mat-select formControlName="sort">
-        <mat-option value="">Sem ordenação</mat-option>
-        <mat-option value="price_asc">Preço — do mais barato</mat-option>
-        <mat-option value="price_desc">Preço — do mais caro</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <button mat-stroked-button type="button" (click)="clearFilters()">
-      <mat-icon>refresh</mat-icon>
-      Limpar filtros
-    </button>
+    <label class="field">
+      <span class="field-label">Ordenar por preço</span>
+      <div class="sort-toggle">
+        <button type="button"
+          [class.on]="filterForm.controls.sort.value === 'price_asc'"
+          (click)="filterForm.controls.sort.setValue(filterForm.controls.sort.value === 'price_asc' ? '' : 'price_asc')">
+          <mat-icon>arrow_upward</mat-icon> Menor
+        </button>
+        <button type="button"
+          [class.on]="filterForm.controls.sort.value === 'price_desc'"
+          (click)="filterForm.controls.sort.setValue(filterForm.controls.sort.value === 'price_desc' ? '' : 'price_desc')">
+          <mat-icon>arrow_downward</mat-icon> Maior
+        </button>
+      </div>
+    </label>
   </aside>
 
-  <!-- Resultados -->
+  <!-- ─── Resultados ─── -->
   <section class="results">
-    <header class="results-header">
+    <header class="results-head">
       <div>
         <h1>Catálogo</h1>
         @if (!loading()) {
-          <p class="result-count">
-            {{ total() }} {{ total() === 1 ? 'produto encontrado' : 'produtos encontrados' }}
-          </p>
+          <p class="result-count">{{ total() }} {{ total() === 1 ? 'produto' : 'produtos' }}</p>
         }
       </div>
-
       @if (selectedSupermarketName()) {
-        <mat-chip-set>
-          <mat-chip (removed)="clearSupermarketFilter()">
-            <mat-icon matChipAvatar>storefront</mat-icon>
-            {{ selectedSupermarketName() }}
-            <button matChipRemove aria-label="Remover filtro">
-              <mat-icon>cancel</mat-icon>
-            </button>
-          </mat-chip>
-        </mat-chip-set>
+        <button class="sm-chip" (click)="clearSupermarketFilter()">
+          <mat-icon>storefront</mat-icon>
+          {{ selectedSupermarketName() }}
+          <mat-icon class="x">close</mat-icon>
+        </button>
       }
     </header>
 
     @if (loading()) {
       <div class="state">
-        <mat-spinner diameter="48"></mat-spinner>
-        <p>A pesquisar produtos…</p>
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>A procurar produtos…</p>
       </div>
     } @else if (products().length === 0) {
-      <div class="state empty">
-        <mat-icon>search_off</mat-icon>
-        <p>Não foram encontrados produtos com estes critérios.</p>
-        <button mat-stroked-button (click)="clearFilters()">Limpar filtros</button>
+      <div class="state">
+        <mat-icon>sentiment_dissatisfied</mat-icon>
+        <p>Nenhum produto com estes critérios.</p>
+        <button class="reset-btn" (click)="clearFilters()">Limpar filtros</button>
       </div>
     } @else {
-      <div class="grid">
-        @for (p of products(); track p._id) {
-          <mat-card class="product-card" appearance="outlined">
-            <a [routerLink]="['/products', p._id]" class="product-image">
-              <mat-icon>shopping_basket</mat-icon>
-            </a>
+      <div class="product-grid">
+        @for (p of products(); track p._id; let i = $index) {
+          <a [routerLink]="['/products', p._id]" class="product-card" [style.animation-delay.ms]="i * 40">
+            <div class="thumb">
+              <img [src]="imageUrl(p)" [alt]="p.name" loading="lazy"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+              <div class="thumb-fallback"><mat-icon>shopping_basket</mat-icon></div>
+              @if (p.stock < 5 && p.stock > 0) {
+                <span class="stock-tag low">Últimas {{ p.stock }}</span>
+              } @else if (p.stock === 0) {
+                <span class="stock-tag out">Esgotado</span>
+              }
+            </div>
 
-            <mat-card-content>
-              <a [routerLink]="['/products', p._id]" class="product-name">{{ p.name }}</a>
-              <p class="category">{{ p.category }}</p>
-              <p class="supermarket">
-                <mat-icon inline>storefront</mat-icon>
-                <span>{{ supermarketNameOf(p) }}</span>
-              </p>
-              <p class="price">
-                <strong>{{ p.price | currency:'EUR':'symbol':'1.2-2':'pt' }}</strong>
+            <div class="card-body">
+              <span class="cat">{{ p.category }}</span>
+              <h3>{{ p.name }}</h3>
+              <p class="sm"><mat-icon>storefront</mat-icon>{{ supermarketNameOf(p) }}</p>
+              <div class="price-row">
+                <span class="price">{{ p.price | currency:'EUR':'symbol':'1.2-2' }}</span>
                 <span class="unit">/ {{ p.priceUnit }}</span>
-              </p>
-            </mat-card-content>
-
-            <mat-card-actions>
-              <a mat-button color="primary" [routerLink]="['/products', p._id]">
-                Ver detalhes
-              </a>
-              <span class="stock" [class.low]="p.stock < 5">
-                {{ p.stock }} em stock
-              </span>
-            </mat-card-actions>
-          </mat-card>
+              </div>
+            </div>
+          </a>
         }
       </div>
 

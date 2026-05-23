@@ -1,87 +1,126 @@
+<!-- ═══ HERO ═══ -->
 <section class="hero">
-  <div class="hero-content">
-    <h1>Os teus supermercados favoritos, num só sítio</h1>
-    <p>Pesquisa produtos, compara preços e recebe em casa — tudo a partir dos supermercados locais que conheces.</p>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">
+        <span class="dot"></span> Mercados locais · entrega rápida
+      </span>
+      <h1>
+        O teu bairro,<br>
+        <span class="hl">entregue</span> à porta.
+      </h1>
+      <p class="lede">
+        Compara preços entre mercearias da tua zona, enche o cesto e recebe em casa
+        por um estafeta. Simples, fresco, local.
+      </p>
 
-    <mat-form-field appearance="outline" class="search-bar">
-      <mat-icon matPrefix>search</mat-icon>
-      <mat-label>Procurar supermercado por nome ou morada…</mat-label>
-      <input
-        matInput
-        type="text"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
-        autocomplete="off">
-    </mat-form-field>
+      <div class="hero-search">
+        <mat-icon>search</mat-icon>
+        <input
+          type="text"
+          placeholder="Procura um supermercado…"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)">
+        <a routerLink="/shop" class="hero-search-btn">Ver loja</a>
+      </div>
+
+      <div class="hero-stats">
+        <div><strong>{{ supermarkets().length }}</strong><span>mercados</span></div>
+        <div><strong>24/7</strong><span>encomendas</span></div>
+        <div><strong>Local</strong><span>sempre fresco</span></div>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <div class="blob blob-lime"></div>
+      <div class="blob blob-tang"></div>
+      <div class="art-card art-card-1"><mat-icon>eco</mat-icon><span>Fresco</span></div>
+      <div class="art-card art-card-2"><mat-icon>local_shipping</mat-icon><span>Entregue</span></div>
+      <div class="art-card art-card-3"><mat-icon>sell</mat-icon><span>Melhor preço</span></div>
+    </div>
   </div>
 </section>
 
-<section class="content">
-  <div class="section-header">
-    <h2>Supermercados disponíveis</h2>
+<!-- ═══ TICKER ═══ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    @for (n of [1,2]; track n) {
+      <span>FRUTAS &amp; LEGUMES</span><span class="sep">✳</span>
+      <span>PADARIA</span><span class="sep">✳</span>
+      <span>CARNE</span><span class="sep">✳</span>
+      <span>PEIXE FRESCO</span><span class="sep">✳</span>
+      <span>BEBIDAS</span><span class="sep">✳</span>
+      <span>LIMPEZA</span><span class="sep">✳</span>
+    }
+  </div>
+</div>
+
+<!-- ═══ MAPA ═══ -->
+@if (withLocation().length > 0) {
+  <section class="map-section">
+    <div class="map-head">
+      <h2>No mapa</h2>
+      <span class="count">{{ withLocation().length }} {{ withLocation().length === 1 ? 'mercado localizado' : 'mercados localizados' }}</span>
+    </div>
+    <div id="homeMap" class="home-map"></div>
+  </section>
+}
+
+<!-- ═══ SUPERMERCADOS ═══ -->
+<section class="markets">
+  <div class="markets-head">
+    <h2>Mercados perto de ti</h2>
     @if (!loading() && !error()) {
-      <span class="count">
-        {{ filtered().length }} {{ filtered().length === 1 ? 'supermercado' : 'supermercados' }}
-      </span>
+      <span class="count">{{ filtered().length }} disponíveis</span>
     }
   </div>
 
   @if (loading()) {
     <div class="state">
-      <mat-spinner diameter="48"></mat-spinner>
-      <p>A carregar supermercados…</p>
+      <mat-spinner diameter="44"></mat-spinner>
+      <p>A procurar mercados…</p>
     </div>
   } @else if (error()) {
     <div class="state error">
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon>sentiment_dissatisfied</mat-icon>
       <p>{{ error() }}</p>
     </div>
   } @else if (filtered().length === 0) {
-    <div class="state empty">
-      <mat-icon>store</mat-icon>
+    <div class="state">
+      <mat-icon>storefront</mat-icon>
       @if (searchTerm()) {
-        <p>Nenhum supermercado corresponde a "{{ searchTerm() }}".</p>
+        <p>Nada encontrado para "{{ searchTerm() }}".</p>
       } @else {
-        <p>Ainda não há supermercados disponíveis na plataforma.</p>
+        <p>Ainda não há mercados disponíveis.</p>
       }
     </div>
   } @else {
-    <div class="grid">
-      @for (sm of filtered(); track sm._id) {
-        <mat-card class="sm-card" appearance="outlined">
-          <div class="sm-card-image">
-            <mat-icon>storefront</mat-icon>
+    <div class="market-grid">
+      @for (sm of filtered(); track sm._id; let i = $index) {
+        <a
+          [routerLink]="['/shop']"
+          [queryParams]="{ supermarketId: sm._id }"
+          class="market-card"
+          [style.animation-delay.ms]="i * 60">
+          <div class="market-top">
+            <span class="seal">{{ initials(sm.name) }}</span>
+            @if (hasCourier(sm)) {
+              <span class="badge-courier"><mat-icon>local_shipping</mat-icon> Domicílio</span>
+            }
           </div>
 
-          <mat-card-content>
-            <h3>{{ sm.name }}</h3>
-            <p class="address">
-              <mat-icon inline>place</mat-icon>
-              <span>{{ sm.address }}</span>
-            </p>
-            @if (sm.schedule) {
-              <p class="schedule">
-                <mat-icon inline>schedule</mat-icon>
-                <span>{{ sm.schedule }}</span>
-              </p>
-            }
-            @if (sm.description) {
-              <p class="description">{{ sm.description }}</p>
-            }
-            <p class="delivery">{{ deliverySummary(sm) }}</p>
-          </mat-card-content>
+          <h3>{{ sm.name }}</h3>
 
-          <mat-card-actions>
-            <a
-              mat-flat-button
-              color="primary"
-              [routerLink]="['/shop']"
-              [queryParams]="{ supermarketId: sm._id }">
-              Ver produtos
-              <mat-icon iconPositionEnd>arrow_forward</mat-icon>
-            </a>
-          </mat-card-actions>
-        </mat-card>
+          <p class="addr"><mat-icon>place</mat-icon>{{ sm.address }}</p>
+          @if (sm.schedule) {
+            <p class="addr"><mat-icon>schedule</mat-icon>{{ sm.schedule }}</p>
+          }
+
+          <div class="market-foot">
+            <span class="delivery">{{ deliverySummary(sm) }}</span>
+            <span class="go"><mat-icon>arrow_outward</mat-icon></span>
+          </div>
+        </a>
       }
     </div>
   }

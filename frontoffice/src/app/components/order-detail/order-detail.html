@@ -1,107 +1,93 @@
-<div class="detail-container">
-  <div class="header-actions">
-    <button mat-button routerLink="/orders">
-      <mat-icon>arrow_back</mat-icon> Voltar às encomendas
-    </button>
-  </div>
+<div class="page">
+  <a routerLink="/orders" class="back"><mat-icon>arrow_back</mat-icon> Encomendas</a>
 
   @if (loading()) {
-    <div class="loading-state">A carregar detalhe...</div>
+    <div class="state"><mat-spinner diameter="40"></mat-spinner><p>A carregar…</p></div>
   } @else if (order(); as o) {
-    <div class="detail-grid">
-      <div class="main-info">
-        <mat-card class="status-card">
-          <mat-card-header>
-            <mat-card-title>Estado da Encomenda #{{ o._id.slice(-6).toUpperCase() }}</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            @if (o.status === 'cancelled') {
-              <div class="cancelled-banner">
-                <mat-icon>cancel</mat-icon>
-                <span>Esta encomenda foi cancelada.</span>
-              </div>
-            } @else {
-              <div class="timeline">
-                @for (step of statusSteps; track step.id) {
-                  <div class="step" [class.active]="isStepActive(step.id)">
-                    <div class="step-icon">
-                      <mat-icon>{{ step.icon }}</mat-icon>
-                    </div>
-                    <div class="step-label">{{ step.label }}</div>
-                  </div>
-                  @if (!$last) { <div class="step-line" [class.active]="isStepActive(statusSteps[$index+1].id)"></div> }
-                }
-              </div>
-            }
-          </mat-card-content>
-          @if (canCancel()) {
-            <mat-card-actions>
-              <button mat-stroked-button color="warn" (click)="cancelOrder()">Cancelar Encomenda</button>
-              <span class="cancel-hint">Disponível até 5 min após a confirmação</span>
-            </mat-card-actions>
-          }
-        </mat-card>
+    <div class="od-head">
+      <div>
+        <span class="od-id">Encomenda #{{ o._id.slice(-6).toUpperCase() }}</span>
+        <h1>{{ o.supermarketId?.name }}</h1>
+      </div>
+      <span class="pill" [attr.data-status]="o.status">{{ getLabel(o.status) }}</span>
+    </div>
 
-        <mat-card class="items-card">
-          <mat-card-header>
-            <mat-card-title>Produtos</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="items-list">
-              @for (item of o.items; track item.productId) {
-                <div class="item-row">
-                  <span class="qty">{{ item.quantity }}x</span>
-                  <span class="name">{{ item.name }}</span>
-                  <span class="price">{{ (item.price * item.quantity) | currency:'EUR' }}</span>
+    <div class="od-grid">
+      <div class="od-main">
+        <!-- Timeline -->
+        <section class="block">
+          @if (o.status === 'cancelled') {
+            <div class="cancelled">
+              <mat-icon>cancel</mat-icon>
+              <div>
+                <strong>Encomenda cancelada</strong>
+                <p>Esta encomenda foi cancelada e não será entregue.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="timeline">
+              @for (step of statusSteps; track step.id) {
+                <div class="tstep" [class.done]="isStepActive(step.id)">
+                  <span class="tdot"><mat-icon>{{ step.icon }}</mat-icon></span>
+                  <span class="tlabel">{{ step.label }}</span>
                 </div>
+                @if (!$last) {
+                  <div class="tline" [class.done]="isStepActive(statusSteps[$index+1].id)"></div>
+                }
               }
             </div>
-            <mat-divider></mat-divider>
-            <div class="totals">
-              <div class="row">
-                <span>Subtotal</span>
-                <span>{{ (o.total - o.deliveryCost) | currency:'EUR' }}</span>
-              </div>
-              <div class="row">
-                <span>Custo de Entrega ({{ o.deliveryMethod === 'pickup' ? 'Levantamento' : 'Courier' }})</span>
-                <span>{{ o.deliveryCost | currency:'EUR' }}</span>
-              </div>
-              <div class="row total">
-                <span>Total</span>
-                <span>{{ o.total | currency:'EUR' }}</span>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+          }
 
-      <div class="side-info">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Informação</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="info-section">
-              <label>Supermercado</label>
-              <p>{{ o.supermarketId?.name }}</p>
-              <p class="small">{{ o.supermarketId?.address }}</p>
+          @if (canCancel()) {
+            <div class="cancel-row">
+              <button class="btn-ghost" (click)="cancelOrder()">Cancelar encomenda</button>
+              <span class="hint">Disponível até 5 min após a confirmação</span>
             </div>
-            <mat-divider></mat-divider>
-            <div class="info-section">
-              <label>Data</label>
-              <p>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
-            </div>
-            @if (o.courierId) {
-              <mat-divider></mat-divider>
-              <div class="info-section">
-                <label>Estafeta</label>
-                <p>{{ o.courierId.name }}</p>
-                <p class="small">{{ o.courierId.phone }}</p>
+          }
+        </section>
+
+        <!-- Itens -->
+        <section class="block">
+          <h2>Produtos</h2>
+          <div class="items">
+            @for (item of o.items; track item.productId) {
+              <div class="irow">
+                <span class="iqty">{{ item.quantity }}×</span>
+                <span class="iname">{{ item.name }}</span>
+                <span class="iprice">{{ (item.price * item.quantity) | currency:'EUR' }}</span>
               </div>
             }
-          </mat-card-content>
-        </mat-card>
+          </div>
+          <div class="totals">
+            <div class="trow"><span>Subtotal</span><span>{{ (o.total - o.deliveryCost) | currency:'EUR' }}</span></div>
+            <div class="trow"><span>Entrega ({{ o.deliveryMethod === 'pickup' ? 'Levantamento' : 'Domicílio' }})</span><span>{{ o.deliveryCost | currency:'EUR' }}</span></div>
+            <div class="trow total"><span>Total</span><span>{{ o.total | currency:'EUR' }}</span></div>
+          </div>
+        </section>
       </div>
+
+      <!-- Info lateral -->
+      <aside class="od-side">
+        <div class="block">
+          <h2>Detalhes</h2>
+          <div class="info">
+            <span class="ilabel">Supermercado</span>
+            <span class="ival">{{ o.supermarketId?.name }}</span>
+            <span class="isub">{{ o.supermarketId?.address }}</span>
+          </div>
+          <div class="info">
+            <span class="ilabel">Data</span>
+            <span class="ival">{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          @if (o.courierId) {
+            <div class="info">
+              <span class="ilabel">Estafeta</span>
+              <span class="ival">{{ o.courierId.name }}</span>
+              <span class="isub">{{ o.courierId.phone }}</span>
+            </div>
+          }
+        </div>
+      </aside>
     </div>
   }
 </div>
