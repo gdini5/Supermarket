@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, catchError, of, tap } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { Cart, CartItem } from '../models/cart.model';
+import { Cart } from '../models/cart.model';
+import { AuthService } from './auth.service';
 
 /*
  Gestão do carrinho de compras.
@@ -13,6 +14,7 @@ import { Cart, CartItem } from '../models/cart.model';
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly baseUrl = `${environment.apiUrl}/cart`;
 
   /* Contagem de itens, usada pelo navbar para o badge. */
@@ -22,36 +24,39 @@ export class CartService {
   readonly cart = signal<Cart | null>(null);
 
   constructor() {
-    // Tenta pré-carregar o carrinho; o interceptor não envia o pedido se não houver token.
-    this.get().subscribe();
+    // Só pré-carrega o carrinho se o utilizador estiver autenticado,
+    // evitando pedidos 401 desnecessários que poluem a consola.
+    if (this.auth.isAuthenticated()) {
+      this.get()
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
   }
 
   /** GET /cart */
   get(): Observable<Cart> {
-    return this.http.get<Cart>(this.baseUrl).pipe(
-      tap(cart => this.updateSignals(cart))
-    );
+    return this.http.get<Cart>(this.baseUrl).pipe(tap((cart) => this.updateSignals(cart)));
   }
 
   /** POST /cart/add/:id */
   add(productId: string, quantity: number = 1): Observable<Cart> {
-    return this.http.post<Cart>(`${this.baseUrl}/add/${productId}`, { quantity }).pipe(
-      tap(cart => this.updateSignals(cart))
-    );
+    return this.http
+      .post<Cart>(`${this.baseUrl}/add/${productId}`, { quantity })
+      .pipe(tap((cart) => this.updateSignals(cart)));
   }
 
   /** PUT /cart/update */
   update(productId: string, quantity: number): Observable<Cart> {
-    return this.http.put<Cart>(`${this.baseUrl}/update`, { productId, quantity }).pipe(
-      tap(cart => this.updateSignals(cart))
-    );
+    return this.http
+      .put<Cart>(`${this.baseUrl}/update`, { productId, quantity })
+      .pipe(tap((cart) => this.updateSignals(cart)));
   }
 
   /** DELETE /cart/clear */
   clear(): Observable<Cart> {
-    return this.http.delete<Cart>(`${this.baseUrl}/clear`).pipe(
-      tap(cart => this.updateSignals(cart))
-    );
+    return this.http
+      .delete<Cart>(`${this.baseUrl}/clear`)
+      .pipe(tap((cart) => this.updateSignals(cart)));
   }
 
   private updateSignals(cart: Cart): void {

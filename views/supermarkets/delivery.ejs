@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Métodos de Entrega — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+      <a href="/supermarket/dashboard" class="btn btn-secondary btn-sm">← Voltar</a>
+      <h1 class="page-title" style="margin:0">Métodos de Entrega</h1>
+    </div>
+
+    <div class="card" style="max-width:640px">
+      <% if (error) { %>
+        <div class="alert alert-error" style="margin-bottom:1.25rem">⚠ <%= error %></div>
+      <% } %>
+      <% if (success) { %>
+        <div class="alert alert-success" style="margin-bottom:1.25rem">✔ <%= success %></div>
+      <% } %>
+
+      <p style="color:var(--text-2);font-size:.9rem;margin-bottom:1.5rem">
+        Define que métodos de entrega disponibilizas aos clientes e o respetivo custo.
+        Tens de ativar pelo menos um método.
+      </p>
+
+      <form action="/supermarket/delivery" method="POST" novalidate>
+
+        <!-- Levantamento em loja -->
+        <div class="card" style="background:var(--bg-3);margin-bottom:1.25rem">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+              <input type="checkbox" name="pickupEnabled" id="pickupEnabled"
+                     style="width:auto;margin:0"
+                     <%= current.pickup.enabled ? 'checked' : '' %>>
+              <span style="font-weight:600">🏪 Levantamento em loja</span>
+            </label>
+            <p style="color:var(--text-3);font-size:.825rem;margin:.4rem 0 0 1.85rem">
+              O cliente vai buscar a encomenda à loja.
+            </p>
+          </div>
+          <div class="form-group" style="margin:0 0 0 1.85rem">
+            <label for="pickupCost">Custo (€)</label>
+            <input type="number" id="pickupCost" name="pickupCost"
+                   step="0.01" min="0"
+                   value="<%= current.pickup.cost %>"
+                   style="max-width:160px">
+          </div>
+        </div>
+
+        <!-- Entrega por estafeta -->
+        <div class="card" style="background:var(--bg-3);margin-bottom:1.5rem">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+              <input type="checkbox" name="courierEnabled" id="courierEnabled"
+                     style="width:auto;margin:0"
+                     <%= current.courier.enabled ? 'checked' : '' %>>
+              <span style="font-weight:600">🛵 Entrega por estafeta</span>
+            </label>
+            <p style="color:var(--text-3);font-size:.825rem;margin:.4rem 0 0 1.85rem">
+              Um estafeta entrega a encomenda ao domicílio do cliente.
+            </p>
+          </div>
+          <div class="form-group" style="margin:0 0 0 1.85rem">
+            <label for="courierCost">Custo (€)</label>
+            <input type="number" id="courierCost" name="courierCost"
+                   step="0.01" min="0"
+                   value="<%= current.courier.cost %>"
+                   style="max-width:160px">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar alterações</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>
