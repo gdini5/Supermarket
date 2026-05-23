@@ -1,55 +1,73 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
 
+import { authGuard } from './guards/auth.guard';
+
+/**
+ * Rotas do frontoffice.
+ *
+ * As rotas comentadas no fundo (cart, checkout, orders) ficam reservadas para
+ * o colega — deve adicioná-las à medida que os componentes forem criados.
+ */
 export const routes: Routes = [
+  // Página inicial: lista de supermercados (pública)
   {
     path: '',
-    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+    loadComponent: () => import('./components/home/home').then(m => m.Home),
+    title: 'Início | Marketplace',
   },
+
+  // Catálogo: pesquisa de produtos com filtros (pública)
   {
     path: 'shop',
-    loadComponent: () => import('./features/shop/shop.component').then(m => m.ShopComponent)
+    loadComponent: () => import('./components/shop/shop').then(m => m.Shop),
+    title: 'Loja | Marketplace',
+  },
+
+  // Detalhe de produto (pública, mas o botão "Adicionar ao carrinho" só
+  // funciona para clientes autenticados — verificado dentro do componente).
+  {
+    path: 'products/:id',
+    loadComponent: () =>
+      import('./components/product-detail/product-detail').then(m => m.ProductDetail),
+    title: 'Produto | Marketplace',
+  },
+
+  // Auth
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login').then(m => m.Login),
+    title: 'Iniciar sessão | Marketplace',
   },
   {
-    path: 'shop/:supermarketId',
-    loadComponent: () => import('./features/shop/shop.component').then(m => m.ShopComponent)
+    path: 'register',
+    loadComponent: () => import('./components/register/register').then(m => m.Register),
+    title: 'Registar | Marketplace',
   },
-  {
-    path: 'product/:id',
-    loadComponent: () => import('./features/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
-  },
-  {
-    path: 'cart',
-    loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'checkout',
-    loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'orders',
-    loadComponent: () => import('./features/orders/orders.component').then(m => m.OrdersComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'orders/:id',
-    loadComponent: () => import('./features/order-detail/order-detail.component').then(m => m.OrderDetailComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'profile',
-    loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'auth/login',
-    loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
-  },
-  {
-    path: 'auth/register',
-    loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent)
-  },
-  { path: '**', redirectTo: '' }
+{
+  path: 'cart',
+  loadComponent: () => import('./components/cart/cart').then(m => m.Cart),
+  canActivate: [authGuard],
+  title: 'Carrinho | Marketplace',
+},
+{
+  path: 'checkout',
+  loadComponent: () => import('./components/checkout/checkout').then(m => m.Checkout),
+  canActivate: [authGuard],
+  title: 'Finalizar encomenda | Marketplace',
+},
+{
+  path: 'orders',
+  loadComponent: () => import('./components/orders/orders').then(m => m.Orders),
+  canActivate: [authGuard],
+  title: 'As minhas encomendas | Marketplace',
+},
+{
+  path: 'orders/:id',
+  loadComponent: () => import('./components/order-detail/order-detail').then(m => m.OrderDetail),
+  canActivate: [authGuard],
+  title: 'Detalhe da encomenda | Marketplace',
+},
+
+  // Wildcard — redireciona para a home
+  { path: '**', redirectTo: '' },
 ];

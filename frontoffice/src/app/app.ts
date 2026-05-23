@@ -1,24 +1,27 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavbarComponent } from './shared/components/navbar/navbar.component';
-import { FooterComponent } from './shared/components/footer/footer.component';
 
+import { Navbar } from './components/layout/navbar/navbar';
+
+/**
+ * Componente raiz da aplicação.
+ * Define o esqueleto: barra de navegação + área onde as rotas renderizam.
+ */
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [RouterOutlet, Navbar],
   template: `
     <app-navbar />
-    <main class="main-content">
+    <main class="app-main">
       <router-outlet />
     </main>
-    <app-footer />
   `,
   styles: [`
-    .main-content {
-      min-height: calc(100vh - 120px);
-      padding-top: 1rem;
+    .app-main {
+      min-height: calc(100vh - 64px);
+      background: var(--mat-sys-surface);
     }
-  `]
+  `],
 })
 export class App {}

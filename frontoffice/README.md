@@ -1,66 +1,59 @@
-# Frontoffice Angular — Marketplace de Supermercados Locais
+# Frontoffice
 
-Angular 21 frontoffice para clientes finais, que consome a REST API do backend Express (porta 3000).
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.11.
 
-## Tecnologias
+## Development server
 
-- Angular 21 (standalone components, functional guards/interceptors, lazy loading)
-- Leaflet + OSRM para mapas e cálculo de rotas
-- Nominatim (OpenStreetMap) para geocoding gratuito
-- JWT auth via localStorage + sessão Express para carrinho
-
-## Arranque rápido
+To start a local development server, run:
 
 ```bash
-# Backend (porta 3000) — a partir da raiz do projecto
-npm start
-
-# Frontend (porta 4200)
-cd frontoffice
-npm install
 ng serve
 ```
 
-Abrir: `http://localhost:4200`
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Estrutura
+## Code scaffolding
 
-```
-src/app/
-├── core/
-│   ├── models/          ← interfaces TypeScript (User, Product, Order, Supermarket, Category)
-│   ├── services/        ← auth, product, supermarket, cart, order, map, category
-│   ├── guards/          ← authGuard (functional)
-│   └── interceptors/    ← authInterceptor (functional, injeta JWT + withCredentials)
-├── shared/
-│   ├── components/      ← navbar, footer, loading-spinner, product-card
-│   └── pipes/           ← priceUnit ("2,50 €/kg")
-└── features/
-    ├── home/            ← lista supermercados + mapa Leaflet com geocoding
-    ├── shop/            ← loja com filtros, debounce e paginação
-    ├── product-detail/  ← detalhe + tabela de comparação de preços
-    ├── cart/            ← carrinho reactivo sincronizado com servidor
-    ├── checkout/        ← stepper 3 passos (resumo → entrega → confirmar)
-    ├── orders/          ← histórico ordenado com badges de estado
-    ├── order-detail/    ← detalhe + mapa OSRM + contagem regressiva
-    ├── auth/            ← login (returnUrl) + registo (validação completa)
-    └── profile/         ← editar dados + alterar password
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
 ```
 
-## Design System
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-Dark theme consistente com o backoffice. Variáveis CSS em `styles.css`.
-Fontes: **Syne** (títulos) + **DM Sans** (texto) via Google Fonts.
+```bash
+ng generate --help
+```
 
-## Segurança
+## Building
 
-- JWT em localStorage; nunca exposto em logs
-- Interceptor injeta `Authorization: Bearer <token>` em todos os pedidos
-- Guard decodifica o payload (sem biblioteca) e verifica expiração
-- Erros 401 redirecionam para login e limpam o token
-- Angular template escaping por defeito
-- Validação reactiva em todos os formulários
+To build the project run:
 
-## Guião de testes
+```bash
+ng build
+```
 
-→ [TESTING.md](./TESTING.md)
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Running unit tests
+
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
