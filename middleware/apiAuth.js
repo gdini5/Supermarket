@@ -11,7 +11,7 @@ const apiAuth = (req, res, next) => {
 
   try {
     const token = header.slice(7);
-    req.apiUser = jwt.verify(token, process.env.JWT_SECRET);
+    req.apiUser = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError')

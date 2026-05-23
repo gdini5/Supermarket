@@ -10,6 +10,7 @@ const cors           = require('cors');
 const helmet         = require('helmet');
 const swaggerUi      = require('swagger-ui-express');
 const swaggerSpec    = require('./config/swagger');
+const mongoSanitize  = require('express-mongo-sanitize');
 
 // ── Ligação ao MongoDB (usa sempre o .env — nunca hardcode aqui) ──────────────
 mongoose.connect(process.env.MONGO_URI)
@@ -37,8 +38,9 @@ app.set('view engine', 'ejs');
 
 // ── Middlewares globais ───────────────────────────────────────────────────────
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(mongoSanitize()); // previne NoSQL injection (remove $ e . dos inputs)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method'));
 
@@ -48,7 +50,12 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 horas
+  cookie: {
+    maxAge:   1000 * 60 * 60 * 24,
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  }
 }));
 
 // ── Variáveis locais disponíveis em TODAS as views ────────────────────────────

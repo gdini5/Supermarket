@@ -1,91 +1,53 @@
-# REST Client (VSCode extension: humao.rest-client)
-# Variáveis: defini @token após fazer login
-# Instalar extensão: https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+### ============================================================
+### MARKETPLACE API — Testes REST Client (VSCode REST Client)
+### Extensão: humao.rest-client
+### Servidor: http://localhost:3000
+### Como usar: clicar "Send Request" acima de cada bloco ###
+### ============================================================
 
-@base = http://localhost:3000/api/v1
-@token = SUBSTITUIR_PELO_TOKEN_DO_LOGIN
+@baseUrl = http://localhost:3000/api/v1
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HEALTH
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Tokens (preencher após cada login/register) ──────────────
+@adminToken      = SUBSTITUIR_APOS_LOGIN_ADMIN
+@clientToken     = SUBSTITUIR_APOS_REGISTER_CLIENTE
+@courierToken    = SUBSTITUIR_APOS_REGISTER_ESTAFETA
+@supermarketToken = SUBSTITUIR_APOS_REGISTER_SUPERMERCADO
 
-### Health check
-GET {{base}}/health
+# ── IDs (preencher com valores reais do ambiente) ─────────────
+@productIdSmA    = SUBSTITUIR_COM_PRODUTO_DO_SM_A
+@productIdSmA2   = SUBSTITUIR_COM_OUTRO_PRODUTO_DO_SM_A
+@productIdSmB    = SUBSTITUIR_COM_PRODUTO_DO_SM_B_DIFERENTE
+@productIdSemStock = SUBSTITUIR_COM_PRODUTO_SEM_STOCK
+@supermarketId   = SUBSTITUIR_COM_ID_REAL_DE_SUPERMERCADO
+@orderId         = SUBSTITUIR_APOS_CRIAR_ENCOMENDA
+@orderIdAlheio   = SUBSTITUIR_COM_ENCOMENDA_DE_OUTRO_CLIENTE
+@targetUserId    = SUBSTITUIR_COM_ID_DE_UTILIZADOR
+@targetSmId      = SUBSTITUIR_COM_ID_DE_SUPERMERCADO_ADMIN
 
-# ─────────────────────────────────────────────────────────────────────────────
-# AUTH
-# ─────────────────────────────────────────────────────────────────────────────
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 1 — Health e configuração
+### ────────────────────────────────────────────────────────────
 
-### Registar utilizador (cliente)
-POST {{base}}/auth/register
-Content-Type: application/json
-
-{
-  "name": "Ana Silva",
-  "email": "ana@teste.pt",
-  "password": "senha123",
-  "confirm": "senha123",
-  "address": "Rua das Flores 10, Porto",
-  "phone": "912345678",
-  "role": "client"
-}
-
-###
-
-### Registar supermercado
-POST {{base}}/auth/register
-Content-Type: application/json
-
-{
-  "name": "João Dono",
-  "email": "supermercado@teste.pt",
-  "password": "senha123",
-  "confirm": "senha123",
-  "address": "Av. da República 20, Porto",
-  "phone": "912345679",
-  "role": "supermarket",
-  "shopName": "Super João",
-  "shopAddress": "Av. da República 20, Porto",
-  "schedule": "Seg-Sex 8h-20h"
-}
+# Teste 1.1: servidor está vivo
+# → Esperado: 200 { status: "ok" }
+GET {{baseUrl}}/health
 
 ###
 
-### ERRO: passwords não coincidem
-POST {{base}}/auth/register
-Content-Type: application/json
-
-{
-  "name": "Teste",
-  "email": "teste@erro.pt",
-  "password": "abc123",
-  "confirm": "xyz999",
-  "address": "Rua X",
-  "phone": "911111111",
-  "role": "client"
-}
+# Teste 1.2: Swagger UI acessível
+# → Esperado: 200 HTML com documentação Swagger
+GET http://localhost:3000/api/docs
 
 ###
 
-### ERRO: tentar criar admin via API pública (deve ser criado como client)
-POST {{base}}/auth/register
-Content-Type: application/json
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 2 — Autenticação (casos normais)
+### ────────────────────────────────────────────────────────────
 
-{
-  "name": "Hacker",
-  "email": "hacker@teste.pt",
-  "password": "hack123",
-  "confirm": "hack123",
-  "address": "Rua Hack 1",
-  "phone": "900000000",
-  "role": "admin"
-}
-
-###
-
-### Login admin
-# @name loginAdmin
-POST {{base}}/auth/login
+# Teste 2.1: Login admin correcto
+# → Esperado: 200 { token, user: { role: "admin" } }
+# → Copiar token e colar em @adminToken acima
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
@@ -95,128 +57,441 @@ Content-Type: application/json
 
 ###
 
-### Login cliente
-# @name loginClient
-POST {{base}}/auth/login
+# Teste 2.2: Registar cliente novo
+# → Esperado: 201 { token, user: { _id, name, email, role: "client" } }
+# → Copiar token → @clientToken
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "email": "ana@teste.pt",
-  "password": "senha123"
+  "name": "Cliente Teste",
+  "email": "cliente.teste@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua dos Testes, 1, Lisboa",
+  "phone": "912345678",
+  "role": "client"
 }
 
 ###
 
-### ERRO: credenciais inválidas
-POST {{base}}/auth/login
+# Teste 2.3: Registar estafeta com veículo bicycle
+# → Esperado: 201 { token, user: { role: "courier" } }
+# → vehicle é guardado no modelo mas não devolvido na resposta de register
+# → Copiar token → @courierToken
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "email": "naoexiste@teste.pt",
-  "password": "errada"
+  "name": "Estafeta Teste",
+  "email": "estafeta.teste@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua dos Estafetas, 5, Porto",
+  "phone": "923456789",
+  "role": "courier",
+  "vehicle": "bicycle"
 }
 
 ###
 
-### Dados do utilizador autenticado
-GET {{base}}/auth/me
-Authorization: Bearer {{token}}
+# Teste 2.4: Registar supermercado
+# → Esperado: 201 { token, user: { role: "supermarket" } }
+# → Copiar token → @supermarketToken
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Gestor Super",
+  "email": "super.teste@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Av. Comercial, 10, Lisboa",
+  "phone": "934567890",
+  "role": "supermarket",
+  "shopName": "Supermercado Teste",
+  "shopAddress": "Av. Comercial, 10, Lisboa",
+  "schedule": "Seg-Sex 9h-21h"
+}
 
 ###
 
-### Logout
-POST {{base}}/auth/logout
-Authorization: Bearer {{token}}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# CATEGORIAS (público)
-# ─────────────────────────────────────────────────────────────────────────────
-
-### Listar categorias ativas
-GET {{base}}/categories
-
-# ─────────────────────────────────────────────────────────────────────────────
-# SUPERMERCADOS (público)
-# ─────────────────────────────────────────────────────────────────────────────
-
-### Listar supermercados aprovados
-GET {{base}}/supermarkets
+# Teste 2.5: GET /me com token válido
+# → Esperado: 200 { _id, name, email, role, address, phone }
+# → Campo "password" NÃO deve aparecer na resposta
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{clientToken}}
 
 ###
 
-### Detalhe de supermercado
-GET {{base}}/supermarkets/SUBSTITUIR_POR_ID
+# Teste 2.6: Logout com token válido
+# → Esperado: 200 { message: "Logout efetuado com sucesso." }
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{clientToken}}
 
 ###
 
-### Produtos de um supermercado
-GET {{base}}/supermarkets/SUBSTITUIR_POR_ID/products
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 3 — Autenticação (falhas e segurança)
+### ────────────────────────────────────────────────────────────
+
+# Teste 3.1: Password errada
+# → Esperado: 401 { error: "Email ou password incorretos." }
+# ⚠ Mensagem IDÊNTICA ao caso de email inexistente (anti-enumeration)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@marketplace.pt",
+  "password": "passworderrada"
+}
 
 ###
 
-### Produtos de supermercado filtrados por categoria
-GET {{base}}/supermarkets/SUBSTITUIR_POR_ID/products?category=Frutas&sort=price_asc
+# Teste 3.2: Email inexistente
+# → Esperado: 401 { error: "Email ou password incorretos." }
+# ⚠ Verificar que a mensagem é igual ao teste 3.1 — sem indicar qual campo falhou
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "naoexiste@example.com",
+  "password": "qualquercoisa"
+}
 
 ###
 
-### ERRO: ID inválido
-GET {{base}}/supermarkets/id_invalido
-
-# ─────────────────────────────────────────────────────────────────────────────
-# PRODUTOS (público)
-# ─────────────────────────────────────────────────────────────────────────────
-
-### Listar todos os produtos disponíveis
-GET {{base}}/products
+# Teste 3.3: Token em falta (sem header Authorization)
+# → Esperado: 401 { error: "Token em falta ou formato inválido." }
+GET {{baseUrl}}/auth/me
 
 ###
 
-### Pesquisa por nome
-GET {{base}}/products?search=leite&sort=price_asc
+# Teste 3.4: Token malformado (string aleatória)
+# → Esperado: 401 { error: "Token inválido." }
+GET {{baseUrl}}/auth/me
+Authorization: Bearer esteNaoEumTokenJWT
 
 ###
 
-### Filtrar por categoria
-GET {{base}}/products?category=Lacticínios&page=1&limit=10
+# Teste 3.5: Token com assinatura incorrecta (segredo diferente)
+# → Esperado: 401 { error: "Token inválido." }
+# Token: payload válido mas assinado com chave errada
+GET {{baseUrl}}/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcwMDAwMDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ.assinaturaInvalida
 
 ###
 
-### Paginação
-GET {{base}}/products?page=2&limit=5
+# Teste 3.6: Token expirado (exp = 1 → ano 1970)
+# → Esperado: 401 { error: "Token expirado. Faz login novamente." }
+GET {{baseUrl}}/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NiIsInJvbGUiOiJjbGllbnQiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MX0.expiradoToken
 
 ###
 
-### Comparar preços de produto
-GET {{base}}/products/compare?name=Leite
+# Teste 3.7: Registo com email já existente
+# → Esperado: 409 { error: "Este email já está registado." }
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Duplicado",
+  "email": "cliente.teste@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua Duplicada, 1",
+  "phone": "911111111",
+  "role": "client"
+}
 
 ###
 
-### ERRO: comparar sem parâmetro name
-GET {{base}}/products/compare
+# Teste 3.8: Password com menos de 6 caracteres
+# → Esperado: 400 { error: "A password deve ter pelo menos 6 caracteres." }
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Teste Curto",
+  "email": "curto@example.com",
+  "password": "abc",
+  "confirm": "abc",
+  "address": "Rua Curta, 1",
+  "phone": "911111112",
+  "role": "client"
+}
 
 ###
 
-### Detalhe de produto
-GET {{base}}/products/SUBSTITUIR_POR_ID
+# Teste 3.9: Passwords que não coincidem
+# → Esperado: 400 { error: "As passwords não coincidem." }
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Teste Mismatch",
+  "email": "mismatch@example.com",
+  "password": "senha123",
+  "confirm": "senha456",
+  "address": "Rua do Erro, 1",
+  "phone": "911111113",
+  "role": "client"
+}
 
 ###
 
-### ERRO: ID inválido
-GET {{base}}/products/abc123
+# Teste 3.10: ESCALADA DE PRIVILÉGIOS — registar como admin via API pública
+# → Esperado: 201 MAS user.role === "client" (fallback automático)
+# → Verificar na resposta: role NÃO é "admin"
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CARRINHO (requer auth como client)
-# ─────────────────────────────────────────────────────────────────────────────
-
-### Ver carrinho
-GET {{base}}/cart
-Authorization: Bearer {{token}}
+{
+  "name": "Hacker Admin",
+  "email": "hacker.admin@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua do Crime, 1",
+  "phone": "911111114",
+  "role": "admin"
+}
 
 ###
 
-### Adicionar produto ao carrinho
-POST {{base}}/cart/add/SUBSTITUIR_POR_ID_PRODUTO
-Authorization: Bearer {{token}}
+# Teste 3.11: Mass assignment — campos extra no body
+# → Esperado: 201 MAS isAdmin e active:false são ignorados
+# → Verificar: user.active === true, sem campo isAdmin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Mass Assignment",
+  "email": "massassign@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua Injection, 1",
+  "phone": "911111115",
+  "role": "client",
+  "isAdmin": true,
+  "active": false,
+  "__proto__": { "admin": true }
+}
+
+###
+
+# Teste 3.12: Campos obrigatórios em falta no login (sem password)
+# → Esperado: 400 { error: "Email e password são obrigatórios." }
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@marketplace.pt"
+}
+
+###
+
+# Teste 3.13: Campos obrigatórios em falta no register (sem phone)
+# → Esperado: 400 { error: "Todos os campos obrigatórios devem ser preenchidos." }
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Sem Telefone",
+  "email": "semtelefone@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua Sem Tel, 1",
+  "role": "client"
+}
+
+###
+
+# Teste 3.14: Brute force — 11ª tentativa deve retornar 429
+# → Rate limit: 10 tentativas por janela de 15 min
+# → Executar este teste 11 vezes seguidas rapidamente
+# → A partir da 11ª: Esperado 429 { error: "Demasiadas tentativas de login..." }
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "brute@example.com",
+  "password": "tentativa"
+}
+
+###
+
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 4 — Produtos (casos normais)
+### ────────────────────────────────────────────────────────────
+
+# Teste 4.1: Listar produtos públicos (sem autenticação)
+# → Esperado: 200 { products: [...], total, page, pages }
+# → Só produtos de supermercados approved=true, active=true, stock > 0
+GET {{baseUrl}}/products
+
+###
+
+# Teste 4.2: Pesquisa por nome (case insensitive)
+# → Esperado: 200, só produtos cujo nome contém "leite" (regex)
+GET {{baseUrl}}/products?search=leite
+
+###
+
+# Teste 4.3: Filtro por categoria
+# → Esperado: 200, só produtos da categoria especificada
+GET {{baseUrl}}/products?category=Lácteos
+
+###
+
+# Teste 4.4: Ordenação por preço crescente
+# → Esperado: 200, price[0] ≤ price[1] ≤ price[2] ...
+GET {{baseUrl}}/products?sort=price_asc
+
+###
+
+# Teste 4.5: Ordenação por preço decrescente
+# → Esperado: 200, price[0] ≥ price[1] ≥ price[2] ...
+GET {{baseUrl}}/products?sort=price_desc
+
+###
+
+# Teste 4.6: Paginação — página 1 com máximo 5 resultados
+# → Esperado: ≤5 produtos, total e pages correcto
+GET {{baseUrl}}/products?page=1&limit=5
+
+###
+
+# Teste 4.7: Detalhe de produto existente
+# → Esperado: 200 com todos os dados do produto
+GET {{baseUrl}}/products/{{productIdSmA}}
+
+###
+
+# Teste 4.8: Comparação de preços por nome
+# → Esperado: 200 array de produtos com mesmo nome em vários supermercados
+GET {{baseUrl}}/products/compare?name=Leite
+
+###
+
+# Teste 4.9: Comparação sem parâmetro name
+# → Esperado: 400 { error: "..." }
+GET {{baseUrl}}/products/compare
+
+###
+
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 5 — Produtos (segurança e edge cases)
+### ────────────────────────────────────────────────────────────
+
+# Teste 5.1: ID de produto inválido (não é ObjectId Mongo)
+# → Esperado: 400 { error: "ID de produto inválido." } — NUNCA 500
+GET {{baseUrl}}/products/naoEumObjectId
+
+###
+
+# Teste 5.2: ID de produto inexistente (ObjectId válido mas sem documento)
+# → Esperado: 404 { error: "Produto não encontrado." }
+GET {{baseUrl}}/products/507f1f77bcf86cd799439011
+
+###
+
+# Teste 5.3: Produto com stock=0 não aparece na listagem pública
+# → Criar produto com stock=0 (via backoffice do supermercado)
+# → Esperado: produto ausente em GET /products
+GET {{baseUrl}}/products?search=ProdutoSemStockTeste
+
+###
+
+# Teste 5.4: Produto de supermercado não aprovado não aparece
+# → Criar supermercado (approved=false) com produto
+# → Esperado: produto ausente na listagem pública
+GET {{baseUrl}}/products
+
+###
+
+# Teste 5.5: Página inválida (0)
+# → Esperado: 200 com page=1 normalizado, ou 400
+GET {{baseUrl}}/products?page=0&limit=5
+
+###
+
+# Teste 5.6: Limit muito alto — prevenção de abuso
+# → Esperado: resultados limitados (não devolver milhares de registos)
+GET {{baseUrl}}/products?page=1&limit=9999
+
+###
+
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 6 — Supermercados
+### ────────────────────────────────────────────────────────────
+
+# Teste 6.1: Listar supermercados aprovados (público, sem auth)
+# → Esperado: 200 array — só approved=true e active=true
+GET {{baseUrl}}/supermarkets
+
+###
+
+# Teste 6.2: Detalhe de supermercado com deliveryMethods
+# → Esperado: 200 com deliveryMethods: [{ type, cost }]
+GET {{baseUrl}}/supermarkets/{{supermarketId}}
+
+###
+
+# Teste 6.3: Produtos de supermercado específico
+# → Esperado: 200 array — só active=true e stock > 0
+GET {{baseUrl}}/supermarkets/{{supermarketId}}/products
+
+###
+
+# Teste 6.4: Produtos de supermercado filtrados e ordenados
+# → Esperado: 200 array filtrado e ordenado por preço
+GET {{baseUrl}}/supermarkets/{{supermarketId}}/products?category=Lácteos&sort=price_asc
+
+###
+
+# Teste 6.5: ID de supermercado inválido (não é ObjectId)
+# → Esperado: 400 — NUNCA 500
+GET {{baseUrl}}/supermarkets/naoEumObjectId
+
+###
+
+# Teste 6.6: ID de supermercado inexistente (ObjectId válido)
+# → Esperado: 404 { error: "Supermercado não encontrado." }
+GET {{baseUrl}}/supermarkets/507f1f77bcf86cd799439011
+
+###
+
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 7 — Carrinho (regras de negócio)
+### ────────────────────────────────────────────────────────────
+
+# NOTA: o carrinho usa sessão Express. O REST Client gere cookies
+# automaticamente dentro do mesmo ficheiro. Para testes isolados,
+# usar o Postman com cookie persistence activado.
+
+# Teste 7.1: Ver carrinho autenticado (inicialmente vazio)
+# → Esperado: 200 { items: [], supermarketId: null }
+GET {{baseUrl}}/cart
+Authorization: Bearer {{clientToken}}
+
+###
+
+# Teste 7.2: Adicionar produto ao carrinho
+# → Esperado: 200 { items: [{ productId, name, price, quantity: 1 }], supermarketId: "..." }
+POST {{baseUrl}}/cart/add/{{productIdSmA}}
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+###
+
+# Teste 7.3: Adicionar segundo produto do MESMO supermercado
+# → Esperado: 200 { items: [prod1, prod2], supermarketId: "..." }
+POST {{baseUrl}}/cart/add/{{productIdSmA2}}
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -225,67 +500,134 @@ Content-Type: application/json
 
 ###
 
-### ERRO: produto de supermercado diferente (segundo add)
-POST {{base}}/cart/add/SUBSTITUIR_POR_ID_PRODUTO_OUTRO_SM
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{}
-
-###
-
-### Atualizar quantidade
-PUT {{base}}/cart/update
-Authorization: Bearer {{token}}
+# Teste 7.4: REGRA 8a — Adicionar produto de SUPERMERCADO DIFERENTE
+# → Esperado: 400 { error: "Não é possível misturar produtos de supermercados diferentes.", code: "DIFFERENT_SUPERMARKET" }
+POST {{baseUrl}}/cart/add/{{productIdSmB}}
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
-  "productId": "SUBSTITUIR_POR_ID_PRODUTO",
+  "quantity": 1
+}
+
+###
+
+# Teste 7.5: REGRA 8d — Adicionar produto SEM STOCK (stock=0)
+# → Esperado: 400 { error: "Produto indisponível ou sem stock." }
+POST {{baseUrl}}/cart/add/{{productIdSemStock}}
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+###
+
+# Teste 7.6: Adicionar sem autenticação
+# → Esperado: 401 { error: "Token em falta ou formato inválido." }
+POST {{baseUrl}}/cart/add/{{productIdSmA}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+###
+
+# Teste 7.7: AUTORIZAÇÃO — supermercado tenta usar carrinho (só clientes)
+# → Esperado: 403 { error: "Sem permissão para este recurso." }
+POST {{baseUrl}}/cart/add/{{productIdSmA}}
+Authorization: Bearer {{supermarketToken}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+###
+
+# Teste 7.8: AUTORIZAÇÃO — admin tenta usar carrinho (só clientes)
+# → Esperado: 403 { error: "Sem permissão para este recurso." }
+POST {{baseUrl}}/cart/add/{{productIdSmA}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+###
+
+# Teste 7.9: Actualizar quantidade para 3
+# → Esperado: 200 { items: [{ ..., quantity: 3 }], ... }
+PUT {{baseUrl}}/cart/update
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "productId": "{{productIdSmA}}",
   "quantity": 3
 }
 
 ###
 
-### Remover item (quantity=0)
-PUT {{base}}/cart/update
-Authorization: Bearer {{token}}
+# Teste 7.10: Actualizar quantidade para 0 — deve remover o item
+# → Esperado: 200 { items: [] (se era o único), supermarketId: null }
+PUT {{baseUrl}}/cart/update
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
-  "productId": "SUBSTITUIR_POR_ID_PRODUTO",
+  "productId": "{{productIdSmA}}",
   "quantity": 0
 }
 
 ###
 
-### Limpar carrinho
-DELETE {{base}}/cart/clear
-Authorization: Bearer {{token}}
+# Teste 7.11: Actualizar com quantidade negativa
+# → Esperado: 400 { error: "Quantidade inválida." }
+PUT {{baseUrl}}/cart/update
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "productId": "{{productIdSmA}}",
+  "quantity": -5
+}
 
 ###
 
-### ERRO: carrinho sem auth
-GET {{base}}/cart
+# Teste 7.12: Actualizar sem productId
+# → Esperado: 400 { error: "productId é obrigatório." }
+PUT {{baseUrl}}/cart/update
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ENCOMENDAS
-# ─────────────────────────────────────────────────────────────────────────────
-
-### Listar encomendas (resultado depende do role)
-GET {{base}}/orders
-Authorization: Bearer {{token}}
-
-###
-
-### Listar encomendas filtradas por estado
-GET {{base}}/orders?status=pending
-Authorization: Bearer {{token}}
+{
+  "quantity": 2
+}
 
 ###
 
-### Criar encomenda (checkout) — precisa de carrinho preenchido
-POST {{base}}/orders
-Authorization: Bearer {{token}}
+# Teste 7.13: Limpar carrinho
+# → Esperado: 200 { items: [], supermarketId: null }
+DELETE {{baseUrl}}/cart/clear
+Authorization: Bearer {{clientToken}}
+
+###
+
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 8 — Encomendas (fluxo completo)
+### ────────────────────────────────────────────────────────────
+
+# PRÉ-CONDIÇÃO para Teste 8.1: executar Teste 7.2 para ter o carrinho preenchido
+
+# Teste 8.1: Criar encomenda — checkout com método pickup
+# → Esperado: 201 { _id, status: "pending", deliveryMethod: "pickup", items, total }
+# → Guardar o _id como @orderId
+POST {{baseUrl}}/orders
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -294,32 +636,93 @@ Content-Type: application/json
 
 ###
 
-### Checkout com courier
-POST {{base}}/orders
-Authorization: Bearer {{token}}
+# Teste 8.2: Checkout com carrinho vazio (após 8.1, carrinho foi limpo)
+# → Esperado: 400 { error: "O carrinho está vazio.", code: "EMPTY_CART" }
+POST {{baseUrl}}/orders
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
-  "deliveryMethod": "courier"
+  "deliveryMethod": "pickup"
 }
 
 ###
 
-### Detalhe de encomenda
-GET {{base}}/orders/SUBSTITUIR_POR_ID
-Authorization: Bearer {{token}}
+# Teste 8.3: Checkout sem campo deliveryMethod
+# → PRÉ-CONDIÇÃO: carrinho não vazio
+# → Esperado: 400 { error: "O método de entrega é obrigatório." }
+POST {{baseUrl}}/orders
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{}
 
 ###
 
-### ERRO: acesso a encomenda de outro utilizador (IDOR)
-GET {{base}}/orders/SUBSTITUIR_POR_ID_ALHEIO
-Authorization: Bearer {{token}}
+# Teste 8.4: Checkout com método de entrega inválido
+# → Esperado: 400 { error: "Método de entrega não suportado por este supermercado." }
+POST {{baseUrl}}/orders
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "deliveryMethod": "teleporte"
+}
 
 ###
 
-### Atualizar estado (supermercado: confirmar)
-PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
-Authorization: Bearer {{token}}
+# Teste 8.5: Listar encomendas do cliente autenticado
+# → Esperado: 200 array — só encomendas deste cliente
+GET {{baseUrl}}/orders
+Authorization: Bearer {{clientToken}}
+
+###
+
+# Teste 8.6: Listar encomendas do supermercado
+# → Esperado: 200 array — só encomendas para o supermercado do utilizador
+GET {{baseUrl}}/orders
+Authorization: Bearer {{supermarketToken}}
+
+###
+
+# Teste 8.7: Listar encomendas do estafeta
+# → Esperado: 200 array — encomendas do courier ou em estado preparing+courier
+GET {{baseUrl}}/orders
+Authorization: Bearer {{courierToken}}
+
+###
+
+# Teste 8.8: Admin lista todas as encomendas
+# → Esperado: 200 array completo de todas as encomendas
+GET {{baseUrl}}/orders
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 8.9: Listar sem autenticação
+# → Esperado: 401
+GET {{baseUrl}}/orders
+
+###
+
+# Teste 8.10: IDOR — cliente A tenta ver encomenda do cliente B
+# → Esperado: 403 { error: "Acesso negado a esta encomenda." }
+GET {{baseUrl}}/orders/{{orderIdAlheio}}
+Authorization: Bearer {{clientToken}}
+
+###
+
+# Teste 8.11: Detalhe da encomenda própria
+# → Esperado: 200 com todos os dados populados (clientId, supermarketId, items)
+GET {{baseUrl}}/orders/{{orderId}}
+Authorization: Bearer {{clientToken}}
+
+###
+
+# Teste 8.12: Admin avança estado pending → confirmed
+# → Esperado: 200 { ..., status: "confirmed", confirmedAt: "..." }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -328,9 +731,10 @@ Content-Type: application/json
 
 ###
 
-### Atualizar estado (supermercado: em preparação)
-PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
-Authorization: Bearer {{token}}
+# Teste 8.13: Admin avança confirmed → preparing
+# → Esperado: 200 { ..., status: "preparing" }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -339,31 +743,11 @@ Content-Type: application/json
 
 ###
 
-### Atualizar estado (courier: a entregar)
-PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "status": "delivering"
-}
-
-###
-
-### Atualizar estado (courier: entregue)
-PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "status": "delivered"
-}
-
-###
-
-### Cancelar encomenda (cliente — só nos primeiros 5 min)
-PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
-Authorization: Bearer {{token}}
+# Teste 8.14: REGRA 8b — Cliente cancela dentro dos 5 minutos
+# → PRÉ-CONDIÇÃO: encomenda em estado confirmed criada há menos de 5 min
+# → Esperado: 200 { ..., status: "cancelled" }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -372,112 +756,359 @@ Content-Type: application/json
 
 ###
 
-### ERRO: cliente tenta confirmar (role não permitido)
-PATCH {{base}}/orders/SUBSTITUIR_POR_ID/status
-Authorization: Bearer {{token}}
+# Teste 8.15: REGRA 8b — Cliente tenta cancelar após 5 minutos
+# → PRÉ-CONDIÇÃO: encomenda confirmed criada há mais de 5 min
+# → Esperado: 400 { error: "O prazo de 5 minutos para cancelar já passou.", code: "CANCEL_WINDOW_EXPIRED" }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "status": "cancelled"
+}
+
+###
+
+# Teste 8.16: ESCALADA — supermercado tenta colocar status "delivered"
+# → Esperado: 403 { error: "Transição de estado não permitida para o seu perfil." }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{supermarketToken}}
+Content-Type: application/json
+
+{
+  "status": "delivered"
+}
+
+###
+
+# Teste 8.17: ESCALADA — cliente tenta avançar para "delivering"
+# → Esperado: 403 { error: "Transição de estado não permitida para o seu perfil." }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "status": "delivering"
+}
+
+###
+
+# Teste 8.18: REGRA 8c — Estafeta aceita primeira entrega
+# → PRÉ-CONDIÇÃO: encomenda em status=preparing, deliveryMethod=courier
+# → Esperado: 200 { ..., status: "delivering", courierId: "..." }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "delivering"
+}
+
+###
+
+# Teste 8.19: REGRA 8c — Estafeta tenta aceitar segunda entrega (já tem uma activa)
+# → PRÉ-CONDIÇÃO: estafeta já tem uma entrega em status=delivering
+# → Esperado: 409 { error: "Já tens uma entrega em curso. Termina-a primeiro.", code: "ACTIVE_DELIVERY_EXISTS" }
+PATCH {{baseUrl}}/orders/SEGUNDA_ENCOMENDA_EM_PREPARING/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "delivering"
+}
+
+###
+
+# Teste 8.20: Estafeta marca encomenda como entregue
+# → Esperado: 200 { ..., status: "delivered" }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "delivered"
+}
+
+###
+
+# Teste 8.21: ID de encomenda inválido
+# → Esperado: 400 { error: "ID de encomenda inválido." } — NUNCA 500
+PATCH {{baseUrl}}/orders/naoEumObjectId/status
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
   "status": "confirmed"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ADMIN
-# ─────────────────────────────────────────────────────────────────────────────
-
-### Dashboard de estatísticas
-GET {{base}}/admin/dashboard
-Authorization: Bearer {{token}}
-
 ###
 
-### Listar todos os supermercados
-GET {{base}}/admin/supermarkets
-Authorization: Bearer {{token}}
-
-###
-
-### Aprovar supermercado
-PATCH {{base}}/admin/supermarkets/SUBSTITUIR_POR_ID/approve
-Authorization: Bearer {{token}}
-
-###
-
-### Rejeitar supermercado
-PATCH {{base}}/admin/supermarkets/SUBSTITUIR_POR_ID/reject
-Authorization: Bearer {{token}}
-
-###
-
-### Listar utilizadores
-GET {{base}}/admin/users
-Authorization: Bearer {{token}}
-
-###
-
-### Ativar/desativar utilizador
-PATCH {{base}}/admin/users/SUBSTITUIR_POR_ID/toggle
-Authorization: Bearer {{token}}
-
-###
-
-### Monitorizar encomendas (todas)
-GET {{base}}/admin/orders
-Authorization: Bearer {{token}}
-
-###
-
-### Monitorizar encomendas por estado
-GET {{base}}/admin/orders?status=pending
-Authorization: Bearer {{token}}
-
-###
-
-### Listar categorias (admin — inclui inativas)
-GET {{base}}/admin/categories
-Authorization: Bearer {{token}}
-
-###
-
-### Criar categoria
-POST {{base}}/admin/categories
-Authorization: Bearer {{token}}
+# Teste 8.22: Status inválido — nunca persistir valor desconhecido
+# → Esperado: 403 { error: "Transição de estado não permitida..." }
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "Bebidas"
+  "status": "magico"
 }
 
 ###
 
-### ERRO: categoria duplicada
-POST {{base}}/admin/categories
-Authorization: Bearer {{token}}
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 9 — Admin (controlo de acesso)
+### ────────────────────────────────────────────────────────────
+
+# Teste 9.1: Dashboard admin com token de admin
+# → Esperado: 200 { totalUsers, activeSupermarkets, totalOrders, pendingSupermarkets }
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 9.2: ESCALADA — cliente tenta aceder ao dashboard admin
+# → Esperado: 403 { error: "Sem permissão para este recurso." }
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{clientToken}}
+
+###
+
+# Teste 9.3: ESCALADA — estafeta tenta aceder ao dashboard admin
+# → Esperado: 403
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{courierToken}}
+
+###
+
+# Teste 9.4: ESCALADA — supermercado tenta aceder ao dashboard admin
+# → Esperado: 403
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{supermarketToken}}
+
+###
+
+# Teste 9.5: ESCALADA — sem token algum
+# → Esperado: 401 { error: "Token em falta ou formato inválido." }
+GET {{baseUrl}}/admin/dashboard
+
+###
+
+# Teste 9.6: Admin lista todos os supermercados (aprovados e pendentes)
+# → Esperado: 200 array com approved=true e approved=false
+GET {{baseUrl}}/admin/supermarkets
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 9.7: Admin aprova supermercado
+# → Esperado: 200 { ..., approved: true }
+PATCH {{baseUrl}}/admin/supermarkets/{{targetSmId}}/approve
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 9.8: Admin rejeita supermercado
+# → Esperado: 200 { ..., approved: false }
+PATCH {{baseUrl}}/admin/supermarkets/{{targetSmId}}/reject
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 9.9: Admin lista todos os utilizadores (sem admins)
+# → Esperado: 200 array — SEM campo password em nenhum utilizador
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 9.10: Admin desativa utilizador (toggle active)
+# → Esperado: 200 { ..., active: false }
+PATCH {{baseUrl}}/admin/users/{{targetUserId}}/toggle
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Teste 9.11: Utilizador desativado tenta fazer login
+# → PRÉ-CONDIÇÃO: utilizador do teste 9.10 com active=false
+# → Esperado: 401 { error: "Esta conta está desativada." }
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "name": "Bebidas"
+  "email": "cliente.teste@example.com",
+  "password": "senha123"
 }
 
 ###
 
-### Ativar/desativar categoria
-PATCH {{base}}/admin/categories/SUBSTITUIR_POR_ID/toggle
-Authorization: Bearer {{token}}
+# Teste 9.12: Admin reactiva utilizador
+# → Esperado: 200 { ..., active: true }
+PATCH {{baseUrl}}/admin/users/{{targetUserId}}/toggle
+Authorization: Bearer {{adminToken}}
 
 ###
 
-### Eliminar categoria
-DELETE {{base}}/admin/categories/SUBSTITUIR_POR_ID
-Authorization: Bearer {{token}}
+# Teste 9.13: Admin lista encomendas (monitorização)
+# → Esperado: 200 array de todas as encomendas
+GET {{baseUrl}}/admin/orders
+Authorization: Bearer {{adminToken}}
 
 ###
 
-### ERRO: acesso admin sem token
-GET {{base}}/admin/dashboard
+# Teste 9.14: Admin lista categorias (inclui inactivas)
+# → Esperado: 200 array completo
+GET {{baseUrl}}/admin/categories
+Authorization: Bearer {{adminToken}}
 
 ###
 
-### ERRO: acesso admin com token de cliente
-GET {{base}}/admin/dashboard
-Authorization: Bearer TOKEN_DE_CLIENTE_AQUI
+# Teste 9.15: Admin cria categoria nova
+# → Esperado: 201 { _id, name: "Congelados Teste" }
+POST {{baseUrl}}/admin/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Congelados Teste"
+}
+
+###
+
+# Teste 9.16: Categoria duplicada
+# → Esperado: 409 { error: "..." }
+POST {{baseUrl}}/admin/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Congelados Teste"
+}
+
+###
+
+# Teste 9.17: ESCALADA — supermercado tenta criar categoria
+# → Esperado: 403
+POST {{baseUrl}}/admin/categories
+Authorization: Bearer {{supermarketToken}}
+Content-Type: application/json
+
+{
+  "name": "Categoria Proibida"
+}
+
+###
+
+# Teste 9.18: ESCALADA — cliente tenta criar categoria
+# → Esperado: 403
+POST {{baseUrl}}/admin/categories
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "name": "Tentativa Cliente"
+}
+
+###
+
+### ────────────────────────────────────────────────────────────
+### SECÇÃO 10 — Injecção e segurança
+### ────────────────────────────────────────────────────────────
+
+# Teste 10.1: NoSQL Injection — operador $gt no email
+# → Esperado: 401 ou 400 — NUNCA 200 (com express-mongo-sanitize, $gt é removido)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": { "$gt": "" },
+  "password": "qualquercoisa"
+}
+
+###
+
+# Teste 10.2: NoSQL Injection — operador $ne na password
+# → Esperado: 401 ou 400 — NUNCA 200
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@marketplace.pt",
+  "password": { "$ne": null }
+}
+
+###
+
+# Teste 10.3: NoSQL Injection — operador $where (código JS)
+# → Esperado: 401 ou 400
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": { "$where": "sleep(5000)" },
+  "password": "abc"
+}
+
+###
+
+# Teste 10.4: NoSQL Injection na query string de produtos
+# → Esperado: 200 com resultados normais (sanitização remove o operador)
+# → NUNCA expor todos os produtos sem filtro real
+GET {{baseUrl}}/products?category[$regex]=.*&category[$options]=i
+
+###
+
+# Teste 10.5: XSS attempt no registo — script tag no nome
+# → Esperado: 201 com nome guardado como texto literal
+# → Verificar GET /auth/me: nome deve ter os caracteres < > sem executar
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "<script>alert('xss')</script>",
+  "email": "xss.test@example.com",
+  "password": "senha123",
+  "confirm": "senha123",
+  "address": "Rua XSS, 1",
+  "phone": "911111116",
+  "role": "client"
+}
+
+###
+
+# Teste 10.6: Verificar que nome XSS foi guardado como texto literal
+# → Esperado: 200 { name: "<script>alert('xss')</script>" } — texto, não executado
+# → Substituir o token pelo token do utilizador criado em 10.5
+GET {{baseUrl}}/auth/me
+Authorization: Bearer TOKEN_XSS_AQUI
+
+###
+
+# Teste 10.7: Verificar headers de segurança Helmet
+# → Verificar na tab "Headers" da resposta:
+#    X-Content-Type-Options: nosniff
+#    X-Frame-Options: SAMEORIGIN
+#    X-DNS-Prefetch-Control: off
+# → Se HTTPS: Strict-Transport-Security presente
+GET {{baseUrl}}/health
+
+###
+
+# Teste 10.8: Path traversal na query string
+# → Esperado: 200 normal (string é tratada como texto) — NUNCA expor ficheiros
+GET {{baseUrl}}/products?search=../../../../etc/passwd
+
+###
+
+# Teste 10.9: HTTP verb tampering — método não definido
+# → Esperado: 404 ou 405 — nunca 200
+DELETE {{baseUrl}}/auth/login
+
+###
+
+# Teste 10.10: CORS — origem não permitida
+# → Simulação: testar via curl de origem diferente:
+# curl -H "Origin: http://evil.com" -I http://localhost:3000/api/v1/health
+# → Esperado: Access-Control-Allow-Origin NÃO inclui http://evil.com
+GET {{baseUrl}}/health
+
+###
