@@ -20,6 +20,7 @@ import { Supermarket } from '../../models/supermarket.model';
 import { CategoryService } from '../../services/category.service';
 import { ProductService } from '../../services/product.service';
 import { SupermarketService } from '../../services/supermarket.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * Página de catálogo. Implementa todos os requisitos de pesquisa do enunciado:
@@ -199,5 +200,16 @@ export class Shop implements OnInit, OnDestroy {
       return this.supermarkets().find((s) => s._id === product.supermarketId)?.name ?? '—';
     }
     return product.supermarketId.name;
+  }
+
+  /**
+   * Constrói a URL completa da imagem do produto.
+   * As imagens são servidas pelo backend em /images/uploads/<ficheiro>.
+   * Derivamos a base removendo o sufixo "/api/v1" do apiUrl.
+   */
+  imageUrl(product: Product): string {
+    const base = environment.apiUrl.replace(/\/api\/v1\/?$/, '');
+    const file = product.image || 'default-product.png';
+    return `${base}/images/uploads/${file}`;
   }
 }

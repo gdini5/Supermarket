@@ -3,14 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatListModule } from '@angular/material/list';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CartService } from '../../services/cart.service';
 import { CartItem } from '../../models/cart.model';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-cart',
@@ -20,9 +18,6 @@ import { CartItem } from '../../models/cart.model';
     RouterLink,
     MatButtonModule,
     MatIconModule,
-    MatCardModule,
-    MatDividerModule,
-    MatListModule,
     MatSnackBarModule,
     MatTooltipModule,
   ],
@@ -55,12 +50,14 @@ export class Cart implements OnInit {
   updateQuantity(item: CartItem, delta: number): void {
     const newQty = item.quantity + delta;
     if (newQty < 0) return;
-
     this.cartService.update(item.productId, newQty).subscribe({
       error: (err) => {
-        if (err.error?.code === 'DIFFERENT_SUPERMARKET') {
-          this.snackBar.open('Não é possível misturar produtos de supermercados diferentes.', 'Fechar', { duration: 3000 });
-        }
+        const msg = err.error?.code === 'INSUFFICIENT_STOCK'
+          ? (err.error?.error ?? 'Stock insuficiente.')
+          : err.error?.code === 'DIFFERENT_SUPERMARKET'
+            ? 'Não é possível misturar produtos de supermercados diferentes.'
+            : 'Não foi possível atualizar a quantidade.';
+        this.snackBar.open(msg, 'Fechar', { duration: 3500 });
       }
     });
   }
@@ -71,5 +68,12 @@ export class Cart implements OnInit {
 
   clearCart(): void {
     this.cartService.clear().subscribe();
+  }
+
+  /** URL completa da imagem (servida pelo backend). */
+  imageUrl(item: CartItem): string {
+    const base = environment.apiUrl.replace(/\/api\/v1\/?$/, '');
+    const file = item.image || 'default-product.png';
+    return `${base}/images/uploads/${file}`;
   }
 }

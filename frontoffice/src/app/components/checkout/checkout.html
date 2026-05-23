@@ -1,81 +1,81 @@
-<div class="checkout-container">
-  <h1>Finalizar Encomenda</h1>
+<div class="page">
+  <h1>Finalizar encomenda</h1>
 
   @if (loading()) {
-    <div class="loading-state">A preparar checkout...</div>
+    <div class="state"><p>A preparar…</p></div>
   } @else if (error()) {
-    <div class="error-state">
+    <div class="state error">
       <mat-icon>error_outline</mat-icon>
       <p>{{ error() }}</p>
-      <button mat-button routerLink="/cart">Voltar ao Carrinho</button>
+      <a routerLink="/cart" class="btn-ghost">Voltar ao carrinho</a>
     </div>
   } @else {
-    <div class="checkout-content">
-      <div class="checkout-main">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Método de Entrega</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <mat-radio-group [ngModel]="selectedMethod()" (ngModelChange)="selectedMethod.set($event)" class="delivery-options">
-              @for (method of deliveryMethods(); track method.type) {
-                <mat-radio-button [value]="method.type">
-                  <div class="method-info">
-                    <span class="method-name">{{ method.type === 'pickup' ? 'Levantamento em Loja' : 'Entrega ao Domicílio' }}</span>
-                    <span class="method-cost">{{ method.cost === 0 ? 'Grátis' : (method.cost | currency:'EUR') }}</span>
-                  </div>
-                </mat-radio-button>
-              }
-            </mat-radio-group>
-          </mat-card-content>
-        </mat-card>
+    <div class="checkout-grid">
+      <div class="main">
+        <section class="block">
+          <h2>Método de entrega</h2>
+          <div class="methods">
+            @for (method of deliveryMethods(); track method.type) {
+              <button
+                type="button"
+                class="method"
+                [class.on]="selectedMethod() === method.type"
+                (click)="selectedMethod.set(method.type)"
+              >
+                <span class="method-icon">
+                  <mat-icon>{{
+                    method.type === 'pickup' ? 'storefront' : 'local_shipping'
+                  }}</mat-icon>
+                </span>
+                <span class="method-text">
+                  <strong>{{
+                    method.type === 'pickup' ? 'Levantamento em loja' : 'Entrega ao domicílio'
+                  }}</strong>
+                  <small>{{
+                    method.type === 'pickup'
+                      ? 'Vais buscar à loja'
+                      : 'Um estafeta entrega em tua casa'
+                  }}</small>
+                </span>
+                <span class="method-cost">{{
+                  method.cost === 0 ? 'Grátis' : (method.cost | currency: 'EUR')
+                }}</span>
+              </button>
+            }
+          </div>
+        </section>
 
-        <mat-card class="items-review">
-          <mat-card-header>
-            <mat-card-title>Revisão dos Itens</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="mini-items-list">
-              @for (item of cart()?.items; track item.productId) {
-                <div class="mini-item">
-                  <span>{{ item.quantity }}x {{ item.name }}</span>
-                  <span>{{ (item.price * item.quantity) | currency:'EUR' }}</span>
-                </div>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
+        <section class="block">
+          <h2>Os teus itens</h2>
+          <div class="review">
+            @for (item of cart()?.items; track item.productId) {
+              <div class="rev-item">
+                <span class="rev-qty">{{ item.quantity }}×</span>
+                <span class="rev-name">{{ item.name }}</span>
+                <span class="rev-price">{{ item.price * item.quantity | currency: 'EUR' }}</span>
+              </div>
+            }
+          </div>
+        </section>
       </div>
 
-      <div class="checkout-summary">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Total da Encomenda</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span>{{ subtotal() | currency:'EUR' }}</span>
-            </div>
-            <div class="summary-row">
-              <span>Custo de Entrega</span>
-              <span>{{ deliveryCost() | currency:'EUR' }}</span>
-            </div>
-            <mat-divider></mat-divider>
-            <div class="summary-row total">
-              <span>Total</span>
-              <span>{{ total() | currency:'EUR' }}</span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-raised-button color="primary" class="w-100"
-                    [disabled]="submitting()" (click)="confirmOrder()">
-              {{ submitting() ? 'A processar...' : 'Confirmar Encomenda' }}
-            </button>
-            <button mat-button class="w-100" routerLink="/cart" [disabled]="submitting()">Voltar ao Carrinho</button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
+      <aside class="summary">
+        <h2>Total</h2>
+        <div class="srow">
+          <span>Subtotal</span><span>{{ subtotal() | currency: 'EUR' }}</span>
+        </div>
+        <div class="srow">
+          <span>Entrega</span
+          ><span>{{ deliveryCost() === 0 ? 'Grátis' : (deliveryCost() | currency: 'EUR') }}</span>
+        </div>
+        <div class="srow total">
+          <span>Total</span><span>{{ total() | currency: 'EUR' }}</span>
+        </div>
+        <button class="btn-lime full" [disabled]="submitting()" (click)="confirmOrder()">
+          {{ submitting() ? 'A processar…' : 'Confirmar encomenda' }}
+        </button>
+        <a routerLink="/cart" class="btn-ghost full">Voltar ao carrinho</a>
+      </aside>
     </div>
   }
 </div>

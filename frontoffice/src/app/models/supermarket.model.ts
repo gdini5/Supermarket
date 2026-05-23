@@ -5,6 +5,12 @@ export interface DeliveryMethod {
   cost: number;
 }
 
+/** Coordenadas geográficas (opcionais) para apresentação em mapa. */
+export interface GeoLocation {
+  lat: number | null;
+  lng: number | null;
+}
+
 /**
  * Supermercado aprovado e ativo na plataforma.
  * Corresponde ao schema `Supermarket` do backend.
@@ -16,6 +22,7 @@ export interface Supermarket {
   description?: string;
   address: string;
   schedule?: string;
+  location?: GeoLocation;
   deliveryMethods?: DeliveryMethod[];
   approved: boolean;
   active: boolean;

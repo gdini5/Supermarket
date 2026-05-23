@@ -15,6 +15,7 @@ import { Supermarket } from '../../models/supermarket.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * Detalhe de um produto. Para além das informações habituais, mostra a
@@ -131,5 +132,12 @@ export class ProductDetail implements OnInit {
     const p = this.product();
     if (!p) return;
     this.cartService.add(p._id, 1).subscribe();
+  }
+
+  /** URL completa da imagem do produto (servida pelo backend). */
+  imageUrl(p: Product): string {
+    const base = environment.apiUrl.replace(/\/api\/v1\/?$/, '');
+    const file = p.image || 'default-product.png';
+    return `${base}/images/uploads/${file}`;
   }
 }

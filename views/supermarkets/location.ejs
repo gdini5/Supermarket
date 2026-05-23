@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Localização — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <!-- Leaflet (mapa) via CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #pickMap { height: 360px; border-radius: var(--radius); border: 1px solid var(--border); margin-top: .5rem; }
+    .coord-readout { display:flex; gap:1rem; margin-top:.75rem; font-size:.85rem; color:var(--text-2); }
+    .coord-readout strong { color: var(--text); }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+      <a href="/supermarket/dashboard" class="btn btn-secondary btn-sm">← Voltar</a>
+      <h1 class="page-title" style="margin:0">Localização no mapa</h1>
+    </div>
+
+    <div class="card" style="max-width:760px">
+      <% if (error) { %>
+        <div class="alert alert-error" style="margin-bottom:1.25rem">⚠ <%= error %></div>
+      <% } %>
+      <% if (success) { %>
+        <div class="alert alert-success" style="margin-bottom:1.25rem">✔ <%= success %></div>
+      <% } %>
+
+      <p style="color:var(--text-2);font-size:.9rem;margin-bottom:.5rem">
+        Clica no mapa para marcar a localização exata do teu supermercado.
+        Os clientes vão poder ver-te no mapa do marketplace.
+      </p>
+
+      <div id="pickMap"></div>
+
+      <form action="/supermarket/location" method="POST" id="locForm">
+        <input type="hidden" name="lat" id="latInput" value="<%= sm.location && sm.location.lat != null ? sm.location.lat : '' %>">
+        <input type="hidden" name="lng" id="lngInput" value="<%= sm.location && sm.location.lng != null ? sm.location.lng : '' %>">
+
+        <div class="coord-readout">
+          <span>Latitude: <strong id="latLabel"><%= sm.location && sm.location.lat != null ? sm.location.lat.toFixed(6) : '—' %></strong></span>
+          <span>Longitude: <strong id="lngLabel"><%= sm.location && sm.location.lng != null ? sm.location.lng.toFixed(6) : '—' %></strong></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:1.25rem">Guardar localização</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function () {
+      var savedLat = parseFloat(document.getElementById('latInput').value);
+      var savedLng = parseFloat(document.getElementById('lngInput').value);
+      var hasSaved = !isNaN(savedLat) && !isNaN(savedLng);
+
+      // Centro por defeito: Felgueiras / Norte de Portugal
+      var startLat = hasSaved ? savedLat : 41.37;
+      var startLng = hasSaved ? savedLng : -8.19;
+      var startZoom = hasSaved ? 16 : 12;
+
+      var map = L.map('pickMap').setView([startLat, startLng], startZoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      var marker = null;
+      function setMarker(lat, lng) {
+        if (marker) { marker.setLatLng([lat, lng]); }
+        else { marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+          marker.on('dragend', function (e) {
+            var p = e.target.getLatLng();
+            updateInputs(p.lat, p.lng);
+          });
+        }
+        updateInputs(lat, lng);
+      }
+      function updateInputs(lat, lng) {
+        document.getElementById('latInput').value = lat;
+        document.getElementById('lngInput').value = lng;
+        document.getElementById('latLabel').textContent = lat.toFixed(6);
+        document.getElementById('lngLabel').textContent = lng.toFixed(6);
+      }
+
+      if (hasSaved) setMarker(savedLat, savedLng);
+
+      map.on('click', function (e) {
+        setMarker(e.latlng.lat, e.latlng.lng);
+      });
+    })();
+  </script>
+</body>
+</html>

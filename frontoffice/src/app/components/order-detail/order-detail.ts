@@ -1,17 +1,14 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { interval, Subscription, switchMap, startWith } from 'rxjs';
 
 import { OrderService } from '../../services/order.service';
-import { Order } from '../../models/order.model';
-import { canCancelOrder } from '../../shared/order-status.utils';
+import { Order, OrderStatus } from '../../models/order.model';
+import { canCancelOrder, getStatusLabel } from '../../shared/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
@@ -19,11 +16,8 @@ import { canCancelOrder } from '../../shared/order-status.utils';
   imports: [
     CommonModule,
     RouterLink,
-    MatCardModule,
-    MatButtonModule,
     MatIconModule,
-    MatDividerModule,
-    MatChipsModule,
+    MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
   templateUrl: './order-detail.html',
@@ -39,6 +33,8 @@ export class OrderDetail implements OnInit, OnDestroy {
   readonly order = signal<Order | null>(null);
   private pollingSub?: Subscription;
 
+  readonly getLabel = getStatusLabel;
+
   readonly canCancel = computed(() => {
     const o = this.order();
     if (!o) return false;
@@ -48,8 +44,8 @@ export class OrderDetail implements OnInit, OnDestroy {
   readonly statusSteps = [
     { id: 'pending', label: 'Pendente', icon: 'schedule' },
     { id: 'confirmed', label: 'Confirmada', icon: 'check_circle' },
-    { id: 'preparing', label: 'Em Preparação', icon: 'restaurant' },
-    { id: 'delivering', label: 'Em Entrega', icon: 'local_shipping' },
+    { id: 'preparing', label: 'Em preparação', icon: 'inventory_2' },
+    { id: 'delivering', label: 'Em entrega', icon: 'local_shipping' },
     { id: 'delivered', label: 'Entregue', icon: 'home' }
   ];
 
@@ -85,7 +81,7 @@ export class OrderDetail implements OnInit, OnDestroy {
     const o = this.order();
     if (!o) return;
 
-    if (confirm('Tem a certeza que deseja cancelar esta encomenda?')) {
+    if (confirm('Tens a certeza que queres cancelar esta encomenda?')) {
       this.orderService.updateStatus(o._id, 'cancelled').subscribe({
         next: (updated) => {
           this.order.set(updated);
@@ -104,11 +100,7 @@ export class OrderDetail implements OnInit, OnDestroy {
   isStepActive(stepId: string): boolean {
     const currentStatus = this.order()?.status;
     if (!currentStatus || currentStatus === 'cancelled') return false;
-
     const statusOrder = ['pending', 'confirmed', 'preparing', 'delivering', 'delivered'];
-    const currentIndex = statusOrder.indexOf(currentStatus);
-    const stepIndex = statusOrder.indexOf(stepId);
-
-    return stepIndex <= currentIndex;
+    return statusOrder.indexOf(stepId) <= statusOrder.indexOf(currentStatus);
   }
 }

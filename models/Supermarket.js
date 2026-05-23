@@ -11,6 +11,12 @@ const SupermarketSchema = new mongoose.Schema({
   description: { type: String, trim: true },
   address:     { type: String, required: true, trim: true },
   schedule:    { type: String, trim: true }, // ex: 'Seg-Sex 8h-20h'
+  // Coordenadas geográficas para apresentação em mapa (bonificação).
+  // Opcionais: um supermercado sem coordenadas simplesmente não aparece no mapa.
+  location: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
+  },
   deliveryMethods: [{
     type: { type: String, enum: Object.values(DELIVERY_METHODS) },
     cost: { type: Number, default: 0 },

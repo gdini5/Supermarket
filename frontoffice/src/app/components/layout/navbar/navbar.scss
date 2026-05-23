@@ -1,0 +1,155 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  height: 68px;
+  padding: 0 clamp(1rem, 4vw, 3rem);
+  background: rgba(14, 15, 12, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+// ─── Marca ──────────────────────────────────────────────────────────────
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.4rem;
+  border-radius: 11px;
+  transform: rotate(-4deg);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+.brand:hover .brand-mark { transform: rotate(4deg) scale(1.06); }
+
+.brand-word {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+// ─── Links ──────────────────────────────────────────────────────────────
+.nav-links {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+
+  a {
+    position: relative;
+    padding: 0.5rem 0.9rem;
+    color: var(--ink-soft);
+    font-weight: 500;
+    font-size: 0.96rem;
+    border-radius: var(--r-sm);
+    transition: color 0.15s;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0.9rem; right: 0.9rem; bottom: 0.35rem;
+      height: 2px;
+      background: var(--lime);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.22s cubic-bezier(.4,0,.2,1);
+    }
+    &:hover { color: var(--ink); }
+    &.active { color: var(--ink); }
+    &.active::after { transform: scaleX(1); }
+  }
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+// ─── Botões ─────────────────────────────────────────────────────────────
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  transition: background 0.15s;
+  &:hover { background: var(--bg-elevated); }
+}
+
+.ghost-btn {
+  padding: 0.55rem 1.1rem;
+  color: var(--ink);
+  font-weight: 600;
+  border-radius: var(--r-pill);
+  transition: background 0.15s;
+  &:hover { background: var(--bg-elevated); }
+}
+
+.solid-btn {
+  padding: 0.55rem 1.3rem;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  border-radius: var(--r-pill);
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover { transform: translateY(-1px); box-shadow: var(--shadow-lime); }
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem 0.35rem 0.4rem;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  &:hover { border-color: var(--line-strong); }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 28px; height: 28px;
+    background: var(--tang);
+    color: var(--tang-ink);
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+  }
+  .user-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; color: var(--ink-soft); }
+}
+
+@media (max-width: 560px) {
+  .nav-links a span, .user-name { display: none; }
+  .brand-word { display: none; }
+}

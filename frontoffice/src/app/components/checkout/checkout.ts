@@ -1,18 +1,18 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatRadioModule } from '@angular/material/radio';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router, RouterLink } from '@angular/router';
 
+import { DeliveryMethod } from '../../models/supermarket.model';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { SupermarketService } from '../../services/supermarket.service';
-import { DeliveryMethod } from '../../models/supermarket.model';
 
 @Component({
   selector: 'app-checkout',
@@ -51,7 +51,7 @@ export class Checkout implements OnInit {
   });
 
   readonly deliveryCost = computed(() => {
-    const method = this.deliveryMethods().find(m => m.type === this.selectedMethod());
+    const method = this.deliveryMethods().find((m) => m.type === this.selectedMethod());
     return method?.cost ?? 0;
   });
 
@@ -65,31 +65,45 @@ export class Checkout implements OnInit {
           return;
         }
 
-        if (cart.supermarketId) {
-          this.supermarketService.getById(cart.supermarketId).subscribe({
-            next: (sm) => {
-              this.deliveryMethods.set(sm.deliveryMethods || []);
-              if (this.deliveryMethods().length === 0) {
-                this.error.set('Este supermercado não tem métodos de entrega configurados.');
-              } else {
-                this.selectedMethod.set(this.deliveryMethods()[0].type);
-              }
-              this.loading.set(false);
-            },
-            error: () => {
-              this.error.set('Não foi possível carregar os métodos de entrega.');
-              this.loading.set(false);
-            }
-          });
-        } else {
-          this.error.set('O carrinho não tem um supermercado associado.');
+        // Normalizar o supermarketId: pode vir como string ou (raramente) objeto
+        const smId =
+          typeof cart.supermarketId === 'object' && cart.supermarketId !== null
+            ? (cart.supermarketId as any)._id
+            : cart.supermarketId;
+
+        if (!smId) {
+          this.error.set(
+            'O carrinho não tem um supermercado associado. Volta ao carrinho e tenta novamente.',
+          );
           this.loading.set(false);
+          return;
         }
+
+        this.supermarketService.getById(smId).subscribe({
+          next: (sm) => {
+            const methods = sm.deliveryMethods || [];
+            this.deliveryMethods.set(methods);
+            if (methods.length === 0) {
+              this.error.set(
+                'Este supermercado ainda não configurou métodos de entrega. Não é possível finalizar a encomenda.',
+              );
+            } else {
+              this.selectedMethod.set(methods[0].type);
+            }
+            this.loading.set(false);
+          },
+          error: () => {
+            this.error.set(
+              'Não foi possível carregar os métodos de entrega. Verifica a tua ligação e tenta novamente.',
+            );
+            this.loading.set(false);
+          },
+        });
       },
       error: () => {
         this.loading.set(false);
         this.router.navigate(['/cart']);
-      }
+      },
     });
   }
 
@@ -104,7 +118,7 @@ export class Checkout implements OnInit {
         this.submitting.set(false);
         const msg = err.error?.message || 'Erro ao realizar encomenda.';
         this.snackBar.open(msg, 'Fechar', { duration: 5000 });
-      }
+      },
     });
   }
 }

@@ -1,53 +1,324 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
+// ════════════════════════════════════════════════════════════════════════
+//  FRESCO — Design System "Mercado Elétrico"
+//  Tema escuro dramático + acentos elétricos (lima + tangerina)
+// ════════════════════════════════════════════════════════════════════════
+
 @use '@angular/material' as mat;
 
 html {
   height: 100%;
+  // Material em modo escuro. As paletas só afetam componentes Material
+  // (spinner, snackbar, menu); a UI visível usa as variáveis --lime/--tang.
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$green-palette,
+        tertiary: mat.$orange-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: 'Outfit',
+        brand-family: 'Archivo',
+      ),
       density: 0,
     )
   );
+  color-scheme: dark;
+}
+
+// ─── Tokens da marca ────────────────────────────────────────────────────
+:root {
+  // Fundos (escuro, com camadas)
+  --bg-base: #0e0f0c; // fundo principal quase-preto esverdeado
+  --bg-surface: #16180f; // superfícies (cards)
+  --bg-surface-2: #1e2114; // superfícies elevadas
+  --bg-elevated: #262a18; // hover / destaque
+
+  // Tinta
+  --ink: #f4f5ee; // texto principal (off-white quente)
+  --ink-soft: #a8ac97; // texto secundário
+  --ink-faint: #6b6f5c; // texto ténue / hints
+
+  // Acentos elétricos
+  --lime: #c8ff1e; // acento primário — energia
+  --lime-deep: #9ecc00; // lima para hover
+  --lime-ink: #1a2400; // texto sobre lima
+  --tang: #ff5c28; // acento secundário — tangerina
+  --tang-soft: #ff7d4d;
+  --tang-ink: #2b0e00;
+
+  // Apoios
+  --berry: #ff3d81; // rosa-framboesa (badges especiais)
+  --sky: #4dd0ff; // azul-céu (info)
+
+  // Linhas
+  --line: #2a2e1c; // bordas subtis
+  --line-strong: #3b4128; // bordas em destaque
+
+  // Raios e sombras
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  --shadow-glow: 0 0 0 1px var(--line), 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lime: 0 6px 24px rgba(200, 255, 30, 0.18);
+
+  // Fontes
+  --font-display: 'Archivo', system-ui, sans-serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
 }
 
 body {
-  // Default the application to a light color theme. Mudar para `dark` ou
-  // `light dark` para suportar dark mode automaticamente.
-  color-scheme: light;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
+  color-scheme: dark;
+  background-color: var(--bg-base);
+  color: var(--ink);
+  font-family: var(--font-body);
   margin: 0;
   height: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ─── Globals da app (additivo ao Material) ─────────────────────────── */
-
-// Reset de margens em títulos e parágrafos — os componentes definem o seu próprio
-// espaçamento.
-h1, h2, h3, h4, h5, h6, p {
+// ─── Reset de margens ───────────────────────────────────────────────────
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
   margin: 0;
 }
 
-// Foco visível e consistente (acessibilidade).
+// Títulos usam a display font
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+// ─── Acessibilidade ─────────────────────────────────────────────────────
 :focus-visible {
-  outline: 2px solid var(--mat-sys-primary);
+  outline: 2px solid var(--lime);
   outline-offset: 2px;
 }
 
-// Mat-icon inline (usado em texto corrido com o atributo `inline`).
 mat-icon[inline] {
   vertical-align: middle;
 }
 
-// Links seguem por defeito a cor primária do tema.
 a {
-  color: var(--mat-sys-primary);
+  color: var(--lime);
+  text-decoration: none;
+}
+
+// ─── Scrollbar custom (detalhe que dá carácter) ────────────────────────
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--r-pill);
+  border: 2px solid var(--bg-base);
+}
+
+// ─── Seleção de texto ───────────────────────────────────────────────────
+::selection {
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+
+// ─── Animações reutilizáveis ────────────────────────────────────────────
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+// ─── Overrides Material para combinar com a marca ───────────────────────
+
+// Snackbar com a nossa linguagem
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--bg-elevated);
+  --mdc-snackbar-supporting-text-color: var(--ink);
+  --mat-snack-bar-button-color: var(--lime);
+}
+
+// Campos de formulário Material — afinar para o tema escuro
+.mat-mdc-form-field {
+  --mdc-filled-text-field-container-color: var(--bg-surface-2);
+}
+
+// Botões Material primários — usar lima
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-flat-button.mat-primary {
+  --mdc-filled-button-container-color: var(--lime);
+  --mdc-filled-button-label-text-color: var(--lime-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  LEAFLET — regras essenciais (garantia de que os tiles aparecem mesmo que
+//  o CSS do CDN não carregue ou seja sobreposto pela encapsulação Angular)
+// ════════════════════════════════════════════════════════════════════════
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background: #1a1a1a;
+  font-family: var(--font-body);
+}
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.leaflet-container .leaflet-overlay-pane svg {
+  max-width: none !important;
+  max-height: none !important;
+}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+  width: auto;
+  padding: 0;
+}
+.leaflet-tile {
+  filter: inherit;
+  visibility: hidden;
+}
+.leaflet-tile-loaded {
+  visibility: inherit;
+}
+.leaflet-pane {
+  z-index: 400;
+}
+.leaflet-tile-pane {
+  z-index: 200;
+}
+.leaflet-overlay-pane {
+  z-index: 400;
+}
+.leaflet-shadow-pane {
+  z-index: 500;
+}
+.leaflet-marker-pane {
+  z-index: 600;
+}
+.leaflet-popup-pane {
+  z-index: 700;
+}
+.leaflet-control {
+  z-index: 800;
+  position: relative;
+}
+.leaflet-top,
+.leaflet-bottom {
+  position: absolute;
+  z-index: 1000;
+  pointer-events: none;
+}
+.leaflet-top {
+  top: 0;
+}
+.leaflet-bottom {
+  bottom: 0;
+}
+.leaflet-left {
+  left: 0;
+}
+.leaflet-right {
+  right: 0;
+}
+.leaflet-control {
+  float: left;
+  clear: both;
+  pointer-events: auto;
+}
+.leaflet-right .leaflet-control {
+  float: right;
+}
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0 5px;
+  font-size: 11px;
+  color: #333;
+}
+.leaflet-popup {
+  position: absolute;
+  text-align: center;
+}
+.leaflet-popup-content-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  padding: 4px;
+}
+.leaflet-popup-content {
+  margin: 10px 14px;
+}
+.leaflet-popup-tip-container {
+  width: 40px;
+  height: 20px;
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.leaflet-popup-tip {
+  width: 17px;
+  height: 17px;
+  background: #fff;
+  transform: rotate(45deg);
+  margin: -10px auto 0;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px 8px;
+  color: #333;
+  text-decoration: none;
 }
