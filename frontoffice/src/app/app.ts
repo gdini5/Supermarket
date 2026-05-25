@@ -55,7 +55,7 @@ import { Navbar } from './components/layout/navbar/navbar';
         align-items: center;
         gap: 0.5rem;
         font-family: var(--font-display);
-        font-weight: 800;
+        font-weight: 700;
         font-size: 1.25rem;
         color: var(--ink);
       }
@@ -66,9 +66,9 @@ import { Navbar } from './components/layout/navbar/navbar';
         height: 32px;
         background: var(--lime);
         color: var(--lime-ink);
-        font-weight: 900;
+        font-weight: 700;
         border-radius: 9px;
-        transform: rotate(-4deg);
+        
       }
       .foot-tag {
         color: var(--ink-soft);

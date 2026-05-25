@@ -24,8 +24,7 @@
   background: var(--tang);
   border-radius: 46% 54% 60% 40% / 55% 48% 52% 45%;
   bottom: -80px; right: -60px;
-  opacity: 0.85;
-  animation: float 9s ease-in-out infinite;
+  opacity: 0.25;
 }
 .aside-content { position: relative; z-index: 1; }
 .aside-mark {
@@ -34,14 +33,13 @@
   background: var(--lime-ink);
   color: var(--lime);
   font-family: var(--font-display);
-  font-weight: 900; font-size: 1.8rem;
-  border-radius: 16px;
-  transform: rotate(-5deg);
+  font-weight: 700; font-size: 1.8rem;
+  border-radius: 12px;
   margin-bottom: 2rem;
 }
 .aside-content h2 {
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 700;
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   line-height: 1.05;
   color: var(--lime-ink);
@@ -60,7 +58,7 @@
   white-space: nowrap;
   span {
     font-family: var(--font-display);
-    font-weight: 800;
+    font-weight: 700;
     color: rgba(26,36,0,.45);
     font-size: 0.9rem;
     letter-spacing: 0.1em;
@@ -75,7 +73,7 @@
   padding: clamp(1.5rem, 4vw, 3rem);
   background: var(--bg-base);
 }
-.auth-box { width: 100%; max-width: 400px; animation: rise 0.5s cubic-bezier(.2,.7,.3,1) both; }
+.auth-box { width: 100%; max-width: 400px; }
 
 .auth-box h1 { font-size: 2rem; }
 .sub { color: var(--ink-soft); margin: 0.4rem 0 2rem; }

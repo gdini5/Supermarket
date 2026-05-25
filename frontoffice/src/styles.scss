@@ -1,75 +1,77 @@
 // ════════════════════════════════════════════════════════════════════════
-//  FRESCO — Design System "Mercado Elétrico"
-//  Tema escuro dramático + acentos elétricos (lima + tangerina)
+//  Marketplace — Estilos globais
+//  Tema claro, cor primária verde sóbrio. Angular Material por baixo.
 // ════════════════════════════════════════════════════════════════════════
 
 @use '@angular/material' as mat;
 
 html {
   height: 100%;
-  // Material em modo escuro. As paletas só afetam componentes Material
-  // (spinner, snackbar, menu); a UI visível usa as variáveis --lime/--tang.
   @include mat.theme(
     (
       color: (
         primary: mat.$green-palette,
-        tertiary: mat.$orange-palette,
+        tertiary: mat.$green-palette,
       ),
       typography: (
-        plain-family: 'Outfit',
-        brand-family: 'Archivo',
+        plain-family: 'Inter, Roboto, sans-serif',
+        brand-family: 'Inter, Roboto, sans-serif',
       ),
       density: 0,
     )
   );
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-// ─── Tokens da marca ────────────────────────────────────────────────────
+// ─── Variáveis de tema ──────────────────────────────────────────────────
+// Mantêm os mesmos nomes de antes para não partir os componentes; só mudam
+// os valores (tema claro + verde sóbrio em vez do escuro/lima).
 :root {
-  // Fundos (escuro, com camadas)
-  --bg-base: #0e0f0c; // fundo principal quase-preto esverdeado
-  --bg-surface: #16180f; // superfícies (cards)
-  --bg-surface-2: #1e2114; // superfícies elevadas
-  --bg-elevated: #262a18; // hover / destaque
+  // Fundos
+  --bg-base: #f5f6f4; // fundo principal (cinza muito claro)
+  --bg-surface: #ffffff; // superfícies (cards)
+  --bg-surface-2: #f0f1ee; // superfícies secundárias
+  --bg-elevated: #e8eae5; // hover / destaque
 
-  // Tinta
-  --ink: #f4f5ee; // texto principal (off-white quente)
-  --ink-soft: #a8ac97; // texto secundário
-  --ink-faint: #6b6f5c; // texto ténue / hints
+  // Texto
+  --ink: #1f2420; // texto principal
+  --ink-soft: #55605a; // texto secundário
+  --ink-faint: #8a948e; // texto ténue / hints
 
-  // Acentos elétricos
-  --lime: #c8ff1e; // acento primário — energia
-  --lime-deep: #9ecc00; // lima para hover
-  --lime-ink: #1a2400; // texto sobre lima
-  --tang: #ff5c28; // acento secundário — tangerina
-  --tang-soft: #ff7d4d;
-  --tang-ink: #2b0e00;
+  // Cor primária (verde sóbrio) — substitui o "lime"
+  --lime: #2e7d52; // verde principal
+  --lime-deep: #256543; // verde para hover
+  --lime-ink: #ffffff; // texto sobre o verde
+
+  // Cor secundária (discreta) — substitui a "tangerina"
+  --tang: #c2410c; // laranja-queimado discreto (usado em alertas/badges)
+  --tang-soft: #d4541f;
+  --tang-ink: #ffffff;
 
   // Apoios
-  --berry: #ff3d81; // rosa-framboesa (badges especiais)
-  --sky: #4dd0ff; // azul-céu (info)
+  --berry: #b03060; // usado pontualmente
+  --sky: #2563a8; // azul info
 
   // Linhas
-  --line: #2a2e1c; // bordas subtis
-  --line-strong: #3b4128; // bordas em destaque
+  --line: #e0e2dd; // bordas subtis
+  --line-strong: #cbcfc8; // bordas em destaque
 
   // Raios e sombras
   --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 22px;
+  --r-md: 12px;
+  --r-lg: 16px;
   --r-pill: 999px;
 
-  --shadow-glow: 0 0 0 1px var(--line), 0 8px 30px rgba(0, 0, 0, 0.45);
-  --shadow-lime: 0 6px 24px rgba(200, 255, 30, 0.18);
+  --shadow-glow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lime: 0 2px 8px rgba(46, 125, 82, 0.2);
 
-  // Fontes
-  --font-display: 'Archivo', system-ui, sans-serif;
-  --font-body: 'Outfit', system-ui, sans-serif;
+  // Fontes — sem display pesado, tipografia normal
+  --font-display: 'Inter', 'Roboto', system-ui, sans-serif;
+  --font-body: 'Inter', 'Roboto', system-ui, sans-serif;
 }
 
 body {
-  color-scheme: dark;
+  color-scheme: light;
   background-color: var(--bg-base);
   color: var(--ink);
   font-family: var(--font-body);
@@ -78,28 +80,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-// Box-sizing global — garante que padding não transborda o width em nenhum elemento
+// Box-sizing global
 *, *::before, *::after { box-sizing: border-box; }
 
 // ─── Reset de margens ───────────────────────────────────────────────────
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p {
-  margin: 0;
-}
+h1, h2, h3, h4, h5, h6, p { margin: 0; }
 
-// Títulos usam a display font
-h1,
-h2,
-h3 {
+h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 // ─── Acessibilidade ─────────────────────────────────────────────────────
@@ -108,90 +99,33 @@ h3 {
   outline-offset: 2px;
 }
 
-mat-icon[inline] {
-  vertical-align: middle;
-}
+mat-icon[inline] { vertical-align: middle; }
 
-a {
-  color: var(--lime);
-  text-decoration: none;
-}
+a { color: var(--lime); text-decoration: none; }
 
-// ─── Scrollbar custom (detalhe que dá carácter) ────────────────────────
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
-}
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-*::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: var(--r-pill);
-  border: 2px solid var(--bg-base);
-}
+::selection { background: var(--lime); color: var(--lime-ink); }
 
-// ─── Seleção de texto ───────────────────────────────────────────────────
-::selection {
-  background: var(--lime);
-  color: var(--lime-ink);
-}
-
-// ─── Animações reutilizáveis ────────────────────────────────────────────
+// ─── Animações (mínimas) ────────────────────────────────────────────────
+// Mantidas como no-op/subtis para os componentes que lhes referem não partirem.
 @keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 @keyframes pop {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 @keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to   { transform: translateX(0); }
 }
 
-// ─── Overrides Material para combinar com a marca ───────────────────────
-
-// Snackbar com a nossa linguagem
+// ─── Overrides Material ─────────────────────────────────────────────────
 .mat-mdc-snack-bar-container {
-  --mdc-snackbar-container-color: var(--bg-elevated);
-  --mdc-snackbar-supporting-text-color: var(--ink);
-  --mat-snack-bar-button-color: var(--lime);
+  --mdc-snackbar-container-color: #2f3a34;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-button-color: #8fd6ab;
 }
-
-// Campos de formulário Material — afinar para o tema escuro
-.mat-mdc-form-field {
-  --mdc-filled-text-field-container-color: var(--bg-surface-2);
-}
-
-// Botões Material primários — usar lima
-.mat-mdc-raised-button.mat-primary,
-.mat-mdc-flat-button.mat-primary {
-  --mdc-filled-button-container-color: var(--lime);
-  --mdc-filled-button-label-text-color: var(--lime-ink);
-  font-family: var(--font-display);
-  font-weight: 700;
-}
-
-// ════════════════════════════════════════════════════════════════════════
 //  LEAFLET — regras essenciais (garantia de que os tiles aparecem mesmo que
 //  o CSS do CDN não carregue ou seja sobreposto pela encapsulação Angular)
 // ════════════════════════════════════════════════════════════════════════

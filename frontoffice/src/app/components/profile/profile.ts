@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,6 +22,7 @@ import { User } from '../../models/user.model';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    DatePipe,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',

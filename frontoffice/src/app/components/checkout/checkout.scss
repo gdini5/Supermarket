@@ -32,7 +32,7 @@
   border: none; border-radius: var(--r-pill); cursor: pointer;
   text-decoration: none;
   transition: transform 0.15s, box-shadow 0.15s;
-  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-lime); }
+  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
   &.full { width: 100%; }
 }
 .btn-ghost {
@@ -42,7 +42,6 @@
   font-family: var(--font-body); font-weight: 600;
   border: 1px solid var(--line-strong); border-radius: var(--r-pill);
   cursor: pointer;
-  box-sizing: border-box;
   transition: border-color 0.15s, color 0.15s;
   &:hover { border-color: var(--tang); color: var(--tang-soft); }
   &.full { width: 100%; }

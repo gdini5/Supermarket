@@ -1,59 +1,29 @@
 <!-- ═══ HERO ═══ -->
 <section class="hero">
-  <div class="hero-grid">
-    <div class="hero-copy">
-      <span class="eyebrow">
-        <span class="dot"></span> Mercados locais · entrega rápida
-      </span>
-      <h1>
-        O teu bairro,<br>
-        <span class="hl">entregue</span> à porta.
-      </h1>
-      <p class="lede">
-        Compara preços entre mercearias da tua zona, enche o cesto e recebe em casa
-        por um estafeta. Simples, fresco, local.
-      </p>
+  <div class="hero-inner">
+    <h1>Os teus supermercados locais, num só sítio</h1>
+    <p class="lede">
+      Pesquisa produtos, compara preços entre mercearias da tua zona e recebe em
+      casa por um estafeta ou levanta na loja.
+    </p>
 
-      <div class="hero-search">
-        <mat-icon>search</mat-icon>
-        <input
-          type="text"
-          placeholder="Procura um supermercado…"
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)">
-        <a routerLink="/shop" class="hero-search-btn">Ver loja</a>
-      </div>
-
-      <div class="hero-stats">
-        <div><strong>{{ supermarkets().length }}</strong><span>mercados</span></div>
-        <div><strong>24/7</strong><span>encomendas</span></div>
-        <div><strong>Local</strong><span>sempre fresco</span></div>
-      </div>
+    <div class="hero-search">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        placeholder="Procura um supermercado…"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)">
+      <a routerLink="/shop" class="hero-search-btn">Ver loja</a>
     </div>
 
-    <div class="hero-art" aria-hidden="true">
-      <div class="blob blob-lime"></div>
-      <div class="blob blob-tang"></div>
-      <div class="art-card art-card-1"><mat-icon>eco</mat-icon><span>Fresco</span></div>
-      <div class="art-card art-card-2"><mat-icon>local_shipping</mat-icon><span>Entregue</span></div>
-      <div class="art-card art-card-3"><mat-icon>sell</mat-icon><span>Melhor preço</span></div>
+    <div class="hero-stats">
+      <div><strong>{{ supermarkets().length }}</strong><span>mercados</span></div>
+      <div><strong>24/7</strong><span>encomendas</span></div>
+      <div><strong>Local</strong><span>sempre fresco</span></div>
     </div>
   </div>
 </section>
-
-<!-- ═══ TICKER ═══ -->
-<div class="ticker" aria-hidden="true">
-  <div class="ticker-track">
-    @for (n of [1,2]; track n) {
-      <span>FRUTAS &amp; LEGUMES</span><span class="sep">✳</span>
-      <span>PADARIA</span><span class="sep">✳</span>
-      <span>CARNE</span><span class="sep">✳</span>
-      <span>PEIXE FRESCO</span><span class="sep">✳</span>
-      <span>BEBIDAS</span><span class="sep">✳</span>
-      <span>LIMPEZA</span><span class="sep">✳</span>
-    }
-  </div>
-</div>
 
 <!-- ═══ MAPA ═══ -->
 @if (withLocation().length > 0) {
@@ -96,12 +66,11 @@
     </div>
   } @else {
     <div class="market-grid">
-      @for (sm of filtered(); track sm._id; let i = $index) {
+      @for (sm of filtered(); track sm._id) {
         <a
           [routerLink]="['/shop']"
           [queryParams]="{ supermarketId: sm._id }"
-          class="market-card"
-          [style.animation-delay.ms]="i * 60">
+          class="market-card">
           <div class="market-top">
             <span class="seal">{{ initials(sm.name) }}</span>
             @if (hasCourier(sm)) {
