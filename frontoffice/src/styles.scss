@@ -78,6 +78,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+// Box-sizing global — garante que padding não transborda o width em nenhum elemento
+*, *::before, *::after { box-sizing: border-box; }
+
 // ─── Reset de margens ───────────────────────────────────────────────────
 h1,
 h2,

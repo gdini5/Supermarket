@@ -225,4 +225,56 @@ router.get('/me', apiAuth, async (req, res, next) => {
   }
 });
 
+/**
+ * @swagger
+ * /auth/me:
+ *   put:
+ *     summary: Atualiza os dados do perfil do utilizador autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:    { type: string }
+ *               phone:   { type: string }
+ *               address: { type: string }
+ *     responses:
+ *       200: { description: Perfil atualizado }
+ *       400: { description: Dados inválidos }
+ *       404: { description: Utilizador não encontrado }
+ */
+router.put('/me', apiAuth, async (req, res, next) => {
+  try {
+    const { name, phone, address } = req.body;
+
+    // Só permitimos alterar estes campos. Email e role não são alteráveis
+    // por aqui (email é identificador de login; role é gerido pelo admin).
+    const updates = {};
+    if (typeof name === 'string' && name.trim()) updates.name = name.trim();
+    if (typeof phone === 'string' && phone.trim()) updates.phone = phone.trim();
+    if (typeof address === 'string' && address.trim()) updates.address = address.trim();
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'Nada para atualizar.' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.apiUser.userId,
+      { $set: updates },
+      { new: true, runValidators: true },
+    ).select('-password');
+
+    if (!user) return res.status(404).json({ error: 'Utilizador não encontrado.' });
+
+    res.json(user);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

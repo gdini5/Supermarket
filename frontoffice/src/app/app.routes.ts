@@ -68,6 +68,13 @@ export const routes: Routes = [
   title: 'Detalhe da encomenda | Marketplace',
 },
 
+{
+  path: 'profile',
+  loadComponent: () => import('./components/profile/profile').then(m => m.Profile),
+  canActivate: [authGuard],
+  title: 'O meu perfil | Marketplace',
+},
+
   // Wildcard — redireciona para a home
   { path: '**', redirectTo: '' },
 ];

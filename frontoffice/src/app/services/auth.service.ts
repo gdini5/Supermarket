@@ -116,6 +116,28 @@ export class AuthService {
     this._currentUser.set(null);
   }
 
+  /** Busca o perfil completo do utilizador (GET /auth/me). */
+  getProfile(): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/me`);
+  }
+
+  /**
+   * Atualiza o perfil (nome, telefone, morada) via PUT /auth/me.
+   * Atualiza também o nome no signal local para o navbar refletir logo.
+   */
+  updateProfile(data: { name?: string; phone?: string; address?: string }): Observable<User> {
+    return this.http.put<User>(`${this.baseUrl}/me`, data).pipe(
+      tap(user => {
+        const current = this._currentUser();
+        if (current) {
+          const updated: AuthUser = { ...current, name: user.name };
+          localStorage.setItem(USER_KEY, JSON.stringify(updated));
+          this._currentUser.set(updated);
+        }
+      }),
+    );
+  }
+
   // ── Privados ────────────────────────────────────────────────────────────
 
   private persistSession(token: string, user: AuthUser): void {

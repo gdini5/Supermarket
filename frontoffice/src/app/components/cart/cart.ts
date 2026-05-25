@@ -76,4 +76,12 @@ export class Cart implements OnInit {
     const file = item.image || 'default-product.png';
     return `${base}/images/uploads/${file}`;
   }
+
+  /** Quando a imagem falha, esconde-a e mostra o ícone de fallback. */
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const icon = img.nextElementSibling as HTMLElement;
+    if (icon) icon.style.display = 'flex';
+  }
 }

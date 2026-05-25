@@ -25,12 +25,9 @@
               <img
                 [src]="imageUrl(item)"
                 [alt]="item.name"
-                onerror="
-                  this.style.display = 'none';
-                  this.nextElementSibling.style.display = 'grid';
-                "
+                (error)="onImgError($event)"
               />
-              <div class="thumb-fb"><mat-icon>shopping_basket</mat-icon></div>
+              <mat-icon class="thumb-fb-icon">shopping_basket</mat-icon>
             </div>
             <div class="item-info">
               <h3>{{ item.name }}</h3>

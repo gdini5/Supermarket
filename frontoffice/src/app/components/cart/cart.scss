@@ -31,6 +31,7 @@
   font-family: var(--font-display); font-weight: 700; font-size: 0.98rem;
   border: none; border-radius: var(--r-pill); cursor: pointer;
   text-decoration: none;
+  box-sizing: border-box;
   transition: transform 0.15s, box-shadow 0.15s;
   &:hover { transform: translateY(-2px); box-shadow: var(--shadow-lime); }
   &.full { width: 100%; }
@@ -42,6 +43,7 @@
   font-family: var(--font-body); font-weight: 600;
   border: 1px solid var(--line-strong); border-radius: var(--r-pill);
   cursor: pointer;
+  box-sizing: border-box;
   transition: border-color 0.15s, color 0.15s;
   &:hover { border-color: var(--tang); color: var(--tang-soft); }
   &.full { width: 100%; }
@@ -73,9 +75,15 @@
   border-radius: var(--r-sm);
   overflow: hidden;
   background: var(--bg-surface-2);
-  img { width: 100%; height: 100%; object-fit: cover; }
-  .thumb-fb { display: none; place-items: center; width: 100%; height: 100%;
-    mat-icon { color: var(--ink-faint); } }
+  position: relative;
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb-fb-icon {
+    display: none;
+    position: absolute; inset: 0;
+    align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    font-size: 1.8rem; width: 100%; height: 100%;
+  }
 }
 .item-info {
   min-width: 0;
