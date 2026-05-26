@@ -32,7 +32,7 @@
   border: none; border-radius: var(--r-pill); cursor: pointer;
   text-decoration: none;
   transition: transform 0.15s, box-shadow 0.15s;
-  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-lime); }
+  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
   &.full { width: 100%; }
 }
 .btn-ghost {
@@ -160,7 +160,7 @@
   text-decoration: none;
   color: var(--ink);
   transition: border-color 0.15s, transform 0.15s;
-  &:hover { border-color: var(--lime); transform: translateX(3px); .ogo { color: var(--lime); } }
+  &:hover { border-color: var(--lime); transform: translateX(0); .ogo { color: var(--lime); } }
 
   .order-l { display: flex; flex-direction: column; }
   .oid { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }

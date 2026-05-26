@@ -8,6 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 
 import { Product } from '../../models/product.model';
@@ -45,6 +46,7 @@ import { environment } from '../../../environments/environment';
     MatChipsModule,
     MatTableModule,
     MatTooltipModule,
+    MatSnackBarModule,
   ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
@@ -52,6 +54,7 @@ import { environment } from '../../../environments/environment';
 export class ProductDetail implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
+  private readonly snack = inject(MatSnackBar);
   readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -131,7 +134,20 @@ export class ProductDetail implements OnInit {
   addToCart(): void {
     const p = this.product();
     if (!p) return;
-    this.cartService.add(p._id, 1).subscribe();
+    this.cartService.add(p._id, 1).subscribe({
+      next: () => {
+        this.snack.open(`"${p.name}" adicionado ao carrinho.`, '', { duration: 2500 });
+      },
+      error: err => {
+        const code = err?.error?.code;
+        const msg = code === 'DIFFERENT_SUPERMARKET'
+          ? 'O carrinho já tem produtos de outro supermercado. Esvazia o carrinho primeiro.'
+          : code === 'INSUFFICIENT_STOCK'
+            ? (err.error?.error ?? 'Stock insuficiente para este produto.')
+            : (err.error?.error ?? 'Não foi possível adicionar ao carrinho.');
+        this.snack.open(msg, 'Fechar', { duration: 5000 });
+      },
+    });
   }
 
   /** URL completa da imagem do produto (servida pelo backend). */

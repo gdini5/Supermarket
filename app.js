@@ -20,7 +20,14 @@ mongoose.connect(process.env.MONGO_URI)
 const app = express();
 
 // ── Segurança e CORS (antes de tudo) ─────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+  // Permite que o frontoffice (localhost:4200) carregue recursos servidos
+  // por este backend (localhost:3000), como as imagens dos produtos.
+  // Sem isto, o helmet aplica Cross-Origin-Resource-Policy: same-origin
+  // e o browser bloqueia as imagens entre origens diferentes.
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 
 app.use(cors({
   origin: [

@@ -143,7 +143,7 @@
   .add-btn {
     background: var(--lime);
     color: var(--lime-ink);
-    &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-lime); }
+    &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
     &:disabled { background: var(--bg-elevated); color: var(--ink-faint); cursor: not-allowed; }
   }
   .compare-btn {
@@ -181,7 +181,7 @@
   text-decoration: none;
   color: var(--ink);
   transition: border-color 0.15s, transform 0.15s;
-  &:hover { border-color: var(--lime); transform: translateX(3px); .cr-go { color: var(--lime); } }
+  &:hover { border-color: var(--lime); transform: translateX(0); .cr-go { color: var(--lime); } }
 
   .cr-seal {
     display: grid; place-items: center;

@@ -5,6 +5,13 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Order, OrderStatus } from '../models/order.model';
 
+/** Estatísticas do cliente, devolvidas por GET /orders/stats. */
+export interface OrderStats {
+  totalOrders: number;
+  totalSpent: number;
+  topProduct: { name: string; quantity: number } | null;
+}
+
 /**
  * Gestão de encomendas — consome /api/v1/orders.
  */
@@ -16,6 +23,11 @@ export class OrderService {
   /** GET /orders */
   list(): Observable<Order[]> {
     return this.http.get<Order[]>(this.baseUrl);
+  }
+
+  /** GET /orders/stats — estatísticas do cliente autenticado. */
+  stats(): Observable<OrderStats> {
+    return this.http.get<OrderStats>(`${this.baseUrl}/stats`);
   }
 
   /** POST /orders */

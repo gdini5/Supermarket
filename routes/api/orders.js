@@ -227,6 +227,62 @@ router.post("/", apiAuth, requireApiRole("client"), async (req, res, next) => {
  *       404:
  *         description: Encomenda não encontrada
  */
+/**
+ * @swagger
+ * /orders/stats:
+ *   get:
+ *     summary: Estatísticas do cliente (nº de encomendas, total gasto, produto mais comprado)
+ *     tags: [Encomendas]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas do cliente autenticado
+ */
+router.get("/stats", apiAuth, requireApiRole("client"), async (req, res, next) => {
+  try {
+    const { userId } = req.apiUser;
+    const clientId = new mongoose.Types.ObjectId(userId);
+
+    const [counts, topProductAgg] = await Promise.all([
+      // Total de encomendas e total gasto (exclui canceladas do total gasto)
+      Order.aggregate([
+        { $match: { clientId } },
+        {
+          $group: {
+            _id: null,
+            totalOrders: { $sum: 1 },
+            totalSpent: {
+              $sum: {
+                $cond: [{ $ne: ["$status", ORDER_STATUS.CANCELLED] }, "$total", 0],
+              },
+            },
+          },
+        },
+      ]),
+      // Produto mais comprado (soma de quantidades por nome)
+      Order.aggregate([
+        { $match: { clientId } },
+        { $unwind: "$items" },
+        { $group: { _id: "$items.name", qty: { $sum: "$items.quantity" } } },
+        { $sort: { qty: -1 } },
+        { $limit: 1 },
+      ]),
+    ]);
+
+    const stats = counts[0] || { totalOrders: 0, totalSpent: 0 };
+    res.json({
+      totalOrders: stats.totalOrders,
+      totalSpent: stats.totalSpent,
+      topProduct: topProductAgg[0]
+        ? { name: topProductAgg[0]._id, quantity: topProductAgg[0].qty }
+        : null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/:id", apiAuth, async (req, res, next) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))

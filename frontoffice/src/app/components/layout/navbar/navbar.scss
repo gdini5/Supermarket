@@ -32,17 +32,13 @@
   background: var(--lime);
   color: var(--lime-ink);
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 700;
   font-size: 1.4rem;
-  border-radius: 11px;
-  transform: rotate(-4deg);
-  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  border-radius: 8px;
 }
-.brand:hover .brand-mark { transform: rotate(4deg) scale(1.06); }
-
 .brand-word {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.45rem;
   letter-spacing: -0.03em;
   color: var(--ink);
@@ -114,7 +110,7 @@
   font-weight: 700;
   border-radius: var(--r-pill);
   transition: transform 0.15s, box-shadow 0.15s;
-  &:hover { transform: translateY(-1px); box-shadow: var(--shadow-lime); }
+  &:hover { background: var(--lime-deep); }
 }
 
 .user-chip {
@@ -141,7 +137,7 @@
     color: var(--tang-ink);
     border-radius: 50%;
     font-family: var(--font-display);
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.85rem;
     text-transform: uppercase;
   }

@@ -1,0 +1,96 @@
+<div class="page">
+  <h1>O meu perfil</h1>
+
+  @if (loading()) {
+    <div class="state"><mat-spinner diameter="40"></mat-spinner><p>A carregar…</p></div>
+  } @else if (user(); as u) {
+    <div class="profile-grid">
+      <!-- Cartão de identidade -->
+      <aside class="id-card">
+        <span class="avatar">{{ initial() }}</span>
+        <h2>{{ u.name }}</h2>
+        <span class="email">{{ u.email }}</span>
+        <span class="role-tag">Cliente</span>
+        @if (u.createdAt) {
+          <span class="member-since">Membro desde {{ u.createdAt | date:'MMMM yyyy' }}</span>
+        }
+
+        @if (stats(); as s) {
+          <div class="stats">
+            <div class="stat">
+              <strong>{{ s.totalOrders }}</strong>
+              <span>{{ s.totalOrders === 1 ? 'encomenda' : 'encomendas' }}</span>
+            </div>
+            <div class="stat">
+              <strong>{{ s.totalSpent | currency:'EUR' }}</strong>
+              <span>total gasto</span>
+            </div>
+            @if (s.topProduct) {
+              <div class="stat wide">
+                <strong>{{ s.topProduct.name }}</strong>
+                <span>mais comprado ({{ s.topProduct.quantity }}×)</span>
+              </div>
+            }
+          </div>
+        }
+      </aside>
+
+      <!-- Formulário de edição -->
+      <section class="edit">
+        <h2>Dados pessoais</h2>
+        <p class="hint">Atualiza os teus dados. O email não pode ser alterado.</p>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <label class="field">
+            <span>Nome completo</span>
+            <div class="input" [class.bad]="form.controls.name.touched && form.controls.name.invalid">
+              <mat-icon>person</mat-icon>
+              <input formControlName="name" autocomplete="name">
+            </div>
+            @if (form.controls.name.touched && form.controls.name.invalid) {
+              <small>O nome é obrigatório (mín. 2 caracteres).</small>
+            }
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <div class="input locked">
+              <mat-icon>mail</mat-icon>
+              <input [value]="u.email" disabled>
+              <mat-icon class="lock">lock</mat-icon>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Telefone</span>
+            <div class="input" [class.bad]="form.controls.phone.touched && form.controls.phone.invalid">
+              <mat-icon>call</mat-icon>
+              <input formControlName="phone" autocomplete="tel" inputmode="tel">
+            </div>
+            @if (form.controls.phone.touched && form.controls.phone.invalid) {
+              <small>O telefone é obrigatório.</small>
+            }
+          </label>
+
+          <label class="field">
+            <span>Morada</span>
+            <div class="input" [class.bad]="form.controls.address.touched && form.controls.address.invalid">
+              <mat-icon>place</mat-icon>
+              <input formControlName="address" autocomplete="street-address">
+            </div>
+            @if (form.controls.address.touched && form.controls.address.invalid) {
+              <small>A morada é obrigatória.</small>
+            }
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="btn-lime" [disabled]="saving() || form.invalid || form.pristine">
+              {{ saving() ? 'A guardar…' : 'Guardar alterações' }}
+            </button>
+            <a routerLink="/orders" class="btn-ghost">As minhas encomendas</a>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+</div>
