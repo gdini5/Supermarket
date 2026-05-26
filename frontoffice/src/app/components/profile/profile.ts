@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../services/auth.service';
+import { OrderService, OrderStats } from '../../services/order.service';
 import { User } from '../../models/user.model';
 
 /**
@@ -23,6 +24,7 @@ import { User } from '../../models/user.model';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     DatePipe,
+    CurrencyPipe,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
@@ -30,11 +32,13 @@ import { User } from '../../models/user.model';
 export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly orders = inject(OrderService);
   private readonly snack = inject(MatSnackBar);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly user = signal<User | null>(null);
+  readonly stats = signal<OrderStats | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -57,6 +61,12 @@ export class Profile implements OnInit {
         this.snack.open('Não foi possível carregar o teu perfil.', 'Fechar', { duration: 4000 });
         this.loading.set(false);
       },
+    });
+
+    // Estatísticas do cliente (nº encomendas, total gasto, produto mais comprado)
+    this.orders.stats().subscribe({
+      next: s => this.stats.set(s),
+      error: () => { /* silencioso — as stats são um extra, não bloqueiam o perfil */ },
     });
   }
 

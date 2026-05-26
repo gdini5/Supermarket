@@ -2,9 +2,9 @@
 
 // ═══════════════════════ HERO ═══════════════════════
 .hero {
-  background: var(--bg-surface);
+  background: linear-gradient(180deg, #eef4ef 0%, var(--bg-surface) 100%);
   border-bottom: 1px solid var(--line);
-  padding: clamp(2.5rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem);
+  padding: clamp(3rem, 6vw, 5rem) clamp(1rem, 4vw, 3rem);
 }
 .hero-inner {
   max-width: 760px;
@@ -12,13 +12,14 @@
   text-align: center;
 }
 .hero h1 {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
   color: var(--ink);
   margin-bottom: 1rem;
+  .hl { color: var(--lime); }
 }
 .lede {
-  font-size: 1.05rem;
-  line-height: 1.55;
+  font-size: 1.08rem;
+  line-height: 1.6;
   color: var(--ink-soft);
   max-width: 36rem;
   margin: 0 auto;
@@ -134,11 +135,13 @@
   border-radius: var(--r-md);
   color: var(--ink);
   text-decoration: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 
   &:hover {
     border-color: var(--lime);
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
     .go { color: var(--lime); }
   }
 }

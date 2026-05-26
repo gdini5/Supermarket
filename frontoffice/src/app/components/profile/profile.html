@@ -14,6 +14,25 @@
         @if (u.createdAt) {
           <span class="member-since">Membro desde {{ u.createdAt | date:'MMMM yyyy' }}</span>
         }
+
+        @if (stats(); as s) {
+          <div class="stats">
+            <div class="stat">
+              <strong>{{ s.totalOrders }}</strong>
+              <span>{{ s.totalOrders === 1 ? 'encomenda' : 'encomendas' }}</span>
+            </div>
+            <div class="stat">
+              <strong>{{ s.totalSpent | currency:'EUR' }}</strong>
+              <span>total gasto</span>
+            </div>
+            @if (s.topProduct) {
+              <div class="stat wide">
+                <strong>{{ s.topProduct.name }}</strong>
+                <span>mais comprado ({{ s.topProduct.quantity }}×)</span>
+              </div>
+            }
+          </div>
+        }
       </aside>
 
       <!-- Formulário de edição -->
