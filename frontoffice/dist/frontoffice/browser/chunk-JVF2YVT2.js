@@ -1,0 +1,1 @@
+var n={pending:"Pendente",confirmed:"Confirmada",preparing:"Em Prepara\xE7\xE3o",delivering:"Em Entrega",delivered:"Entregue",cancelled:"Cancelada"};function r(e){return n[e]??e}function a(e){if(e.status!=="pending"&&e.status!=="confirmed")return!1;let t=new Date(e.confirmedAt).getTime();return Date.now()-t<300*1e3}export{r as a,a as b};
