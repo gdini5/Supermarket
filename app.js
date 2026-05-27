@@ -6,6 +6,11 @@ const MongoStore     = require('connect-mongo');
 const methodOverride = require('method-override');
 const path           = require('path');
 const logger         = require('morgan');
+const cors           = require('cors');
+const helmet         = require('helmet');
+const swaggerUi      = require('swagger-ui-express');
+const swaggerSpec    = require('./config/swagger');
+const mongoSanitize  = require('express-mongo-sanitize');
 
 // ── Ligação ao MongoDB (usa sempre o .env — nunca hardcode aqui) ──────────────
 mongoose.connect(process.env.MONGO_URI)
@@ -14,14 +19,35 @@ mongoose.connect(process.env.MONGO_URI)
 
 const app = express();
 
+// ── Segurança e CORS (antes de tudo) ─────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false,
+  // Permite que o frontoffice (localhost:4200) carregue recursos servidos
+  // por este backend (localhost:3000), como as imagens dos produtos.
+  // Sem isto, o helmet aplica Cross-Origin-Resource-Policy: same-origin
+  // e o browser bloqueia as imagens entre origens diferentes.
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+app.use(cors({
+  origin: [
+    'http://localhost:4200',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // ── View engine ───────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // ── Middlewares globais ───────────────────────────────────────────────────────
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(mongoSanitize()); // previne NoSQL injection (remove $ e . dos inputs)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method'));
 
@@ -31,7 +57,12 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 horas
+  cookie: {
+    maxAge:   1000 * 60 * 60 * 24,
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  }
 }));
 
 // ── Variáveis locais disponíveis em TODAS as views ────────────────────────────
@@ -41,6 +72,9 @@ app.use((req, res, next) => {
   res.locals.currentName = req.session?.userName ?? null;
   next();
 });
+
+// ── Swagger UI ────────────────────────────────────────────────────────────────
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ── Rotas ─────────────────────────────────────────────────────────────────────
 const { requireRole } = require('./middleware/auth');
@@ -53,6 +87,9 @@ app.use('/products',    requireRole('supermarket', 'admin'),    require('./route
 app.use('/client',      requireRole('client'),                  require('./routes/client'));
 app.use('/courier',     requireRole('courier'),                 require('./routes/courier'));
 app.use('/orders',      require('./routes/orders'));
+
+// ── REST API ──────────────────────────────────────────────────────────────────
+app.use('/api/v1', require('./routes/api'));
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {

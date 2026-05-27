@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   address:  { type: String, required: true, trim: true },
   phone:    { type: String, required: true, trim: true },
   role:     { type: String, enum: ['client', 'supermarket', 'courier', 'admin'], default: 'client' },
+  vehicle:  { type: String, enum: ['bicycle', 'motorcycle', 'car', 'foot'], default: null },
   active:   { type: Boolean, default: true }
 }, { timestamps: true });
 

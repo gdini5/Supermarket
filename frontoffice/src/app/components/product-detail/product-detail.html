@@ -1,0 +1,108 @@
+@if (loading()) {
+  <div class="state">
+    <mat-spinner diameter="44"></mat-spinner>
+    <p>A carregar produto…</p>
+  </div>
+} @else if (product(); as p) {
+  <div class="detail">
+    <a routerLink="/shop" class="back">
+      <mat-icon>arrow_back</mat-icon> Catálogo
+    </a>
+
+    <div class="detail-grid">
+      <!-- Imagem -->
+      <div class="visual">
+        <img [src]="imageUrl(p)" [alt]="p.name"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+        <div class="visual-fallback"><mat-icon>shopping_basket</mat-icon></div>
+      </div>
+
+      <!-- Info -->
+      <div class="info">
+        <span class="cat-tag">{{ p.category }}</span>
+        <h1>{{ p.name }}</h1>
+
+        @if (supermarketOf(p); as sm) {
+          <p class="sold-by">
+            <mat-icon>storefront</mat-icon>
+            <span>Vendido por <strong>{{ sm.name }}</strong></span>
+          </p>
+        }
+
+        <div class="price-block">
+          <div class="big-price">
+            {{ p.price | currency:'EUR':'symbol':'1.2-2' }}
+            <span class="unit">/ {{ p.priceUnit }}</span>
+          </div>
+          <div class="stock" [class.low]="p.stock < 5 && p.stock > 0" [class.out]="p.stock === 0">
+            <span class="stock-dot"></span>
+            @if (p.stock === 0) { Esgotado }
+            @else if (p.stock < 5) { Só restam {{ p.stock }} }
+            @else { {{ p.stock }} em stock }
+          </div>
+        </div>
+
+        @if (p.description) {
+          <div class="desc">
+            <h3>Sobre o produto</h3>
+            <p>{{ p.description }}</p>
+          </div>
+        }
+
+        <div class="actions">
+          <button class="add-btn" [disabled]="p.stock === 0" (click)="addToCart()">
+            <mat-icon>add_shopping_cart</mat-icon>
+            {{ p.stock === 0 ? 'Sem stock' : 'Adicionar ao carrinho' }}
+          </button>
+          <button class="compare-btn" (click)="compare()" [disabled]="compareLoading()">
+            <mat-icon>compare_arrows</mat-icon>
+            Comparar preços
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparação -->
+    @if (compareShown()) {
+      <section class="compare">
+        <header>
+          <h2>Comparação de preços</h2>
+          <p>O mesmo produto noutros mercados da plataforma.</p>
+        </header>
+
+        @if (compareLoading()) {
+          <div class="state inline">
+            <mat-spinner diameter="30"></mat-spinner>
+            <span>A comparar…</span>
+          </div>
+        } @else if (comparisons().length === 0) {
+          <div class="state inline">
+            <mat-icon>info</mat-icon>
+            <span>Nenhum outro mercado vende este produto agora.</span>
+          </div>
+        } @else {
+          <div class="compare-list">
+            @for (row of comparisons(); track row._id) {
+              <a [routerLink]="['/products', row._id]" class="compare-row">
+                <span class="cr-seal"><mat-icon>storefront</mat-icon></span>
+                <div class="cr-info">
+                  <span class="cr-sm">{{ comparedSupermarketName(row) }}</span>
+                  <span class="cr-name">{{ row.name }}</span>
+                </div>
+                <div class="cr-price">
+                  <strong>{{ row.price | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                  @if (priceDiff(row.price) !== 0) {
+                    <span class="cr-diff" [class.cheaper]="priceDiff(row.price) < 0" [class.pricier]="priceDiff(row.price) > 0">
+                      {{ priceDiff(row.price) > 0 ? '+' : '' }}{{ priceDiff(row.price) | currency:'EUR':'symbol':'1.2-2' }}
+                    </span>
+                  }
+                </div>
+                <mat-icon class="cr-go">arrow_outward</mat-icon>
+              </a>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+}

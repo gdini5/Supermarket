@@ -1,0 +1,81 @@
+<div class="page">
+  <h1>Finalizar encomenda</h1>
+
+  @if (loading()) {
+    <div class="state"><p>A preparar…</p></div>
+  } @else if (error()) {
+    <div class="state error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <a routerLink="/cart" class="btn-ghost">Voltar ao carrinho</a>
+    </div>
+  } @else {
+    <div class="checkout-grid">
+      <div class="main">
+        <section class="block">
+          <h2>Método de entrega</h2>
+          <div class="methods">
+            @for (method of deliveryMethods(); track method.type) {
+              <button
+                type="button"
+                class="method"
+                [class.on]="selectedMethod() === method.type"
+                (click)="selectedMethod.set(method.type)"
+              >
+                <span class="method-icon">
+                  <mat-icon>{{
+                    method.type === 'pickup' ? 'storefront' : 'local_shipping'
+                  }}</mat-icon>
+                </span>
+                <span class="method-text">
+                  <strong>{{
+                    method.type === 'pickup' ? 'Levantamento em loja' : 'Entrega ao domicílio'
+                  }}</strong>
+                  <small>{{
+                    method.type === 'pickup'
+                      ? 'Vais buscar à loja'
+                      : 'Um estafeta entrega em tua casa'
+                  }}</small>
+                </span>
+                <span class="method-cost">{{
+                  method.cost === 0 ? 'Grátis' : (method.cost | currency: 'EUR')
+                }}</span>
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Os teus itens</h2>
+          <div class="review">
+            @for (item of cart()?.items; track item.productId) {
+              <div class="rev-item">
+                <span class="rev-qty">{{ item.quantity }}×</span>
+                <span class="rev-name">{{ item.name }}</span>
+                <span class="rev-price">{{ item.price * item.quantity | currency: 'EUR' }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <aside class="summary">
+        <h2>Total</h2>
+        <div class="srow">
+          <span>Subtotal</span><span>{{ subtotal() | currency: 'EUR' }}</span>
+        </div>
+        <div class="srow">
+          <span>Entrega</span
+          ><span>{{ deliveryCost() === 0 ? 'Grátis' : (deliveryCost() | currency: 'EUR') }}</span>
+        </div>
+        <div class="srow total">
+          <span>Total</span><span>{{ total() | currency: 'EUR' }}</span>
+        </div>
+        <button class="btn-lime full" [disabled]="submitting()" (click)="confirmOrder()">
+          {{ submitting() ? 'A processar…' : 'Confirmar encomenda' }}
+        </button>
+        <a routerLink="/cart" class="btn-ghost full">Voltar ao carrinho</a>
+      </aside>
+    </div>
+  }
+</div>

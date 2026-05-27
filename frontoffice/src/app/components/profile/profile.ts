@@ -1,116 +1,97 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
+import { OrderService, OrderStats } from '../../services/order.service';
+import { User } from '../../models/user.model';
 
-function passwordsMatch(group: any) {
-  const pw = group.get('newPassword')?.value;
-  const confirm = group.get('confirm')?.value;
-  return pw && confirm && pw !== confirm ? { mismatch: true } : null;
-}
-
+/**
+ * Perfil do cliente — ver e editar dados pessoais (nome, telefone, morada).
+ * O email e o role não são editáveis aqui.
+ */
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
+    RouterLink,
     MatIconModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatDividerModule,
+    MatSnackBarModule,
+    DatePipe,
+    CurrencyPipe,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
-  private readonly auth = inject(AuthService);
-  private readonly http = inject(HttpClient);
-  private readonly snack = inject(MatSnackBar);
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly orders = inject(OrderService);
+  private readonly snack = inject(MatSnackBar);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
-  readonly savingPw = signal(false);
+  readonly user = signal<User | null>(null);
+  readonly stats = signal<OrderStats | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    name:    ['', [Validators.required, Validators.minLength(2)]],
-    email:   [{ value: '', disabled: true }],
-    phone:   [''],
-    address: [''],
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    phone: ['', [Validators.required]],
+    address: ['', [Validators.required]],
   });
 
-  readonly pwForm = this.fb.nonNullable.group({
-    currentPassword: ['', [Validators.required]],
-    newPassword:     ['', [Validators.required, Validators.minLength(6)]],
-    confirm:         ['', [Validators.required]],
-  }, { validators: passwordsMatch });
-
   ngOnInit(): void {
-    const cached = this.auth.currentUser();
-    if (cached) {
-      this.form.patchValue({ name: cached.name, email: cached.email });
-    }
-
-    this.http.get<any>(`${environment.apiUrl}/auth/me`).subscribe({
-      next: u => {
+    this.auth.getProfile().subscribe({
+      next: user => {
+        this.user.set(user);
         this.form.patchValue({
-          name:    u.name,
-          email:   u.email,
-          phone:   u.phone   ?? '',
-          address: u.address ?? '',
+          name: user.name,
+          phone: user.phone,
+          address: user.address,
         });
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.snack.open('Não foi possível carregar o teu perfil.', 'Fechar', { duration: 4000 });
+        this.loading.set(false);
+      },
+    });
+
+    // Estatísticas do cliente (nº encomendas, total gasto, produto mais comprado)
+    this.orders.stats().subscribe({
+      next: s => this.stats.set(s),
+      error: () => { /* silencioso — as stats são um extra, não bloqueiam o perfil */ },
     });
   }
 
-  saveProfile(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+  onSubmit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.saving.set(true);
-
-    const { name, phone, address } = this.form.getRawValue();
-    this.http.patch(`${environment.apiUrl}/auth/me`, { name, phone, address }).subscribe({
-      next: () => {
-        this.snack.open('Perfil atualizado com sucesso.', 'OK', { duration: 3000 });
+    this.auth.updateProfile(this.form.getRawValue()).subscribe({
+      next: user => {
+        this.user.set(user);
         this.saving.set(false);
+        this.snack.open('Perfil atualizado com sucesso.', 'OK', { duration: 3000 });
       },
       error: err => {
-        this.snack.open(err.error?.error ?? 'Erro ao guardar o perfil.', 'OK', { duration: 3000 });
         this.saving.set(false);
+        const msg = err?.error?.error ?? 'Não foi possível atualizar o perfil.';
+        this.snack.open(msg, 'Fechar', { duration: 4000 });
       },
     });
   }
 
-  changePassword(): void {
-    if (this.pwForm.invalid) { this.pwForm.markAllAsTouched(); return; }
-    this.savingPw.set(true);
-
-    const { currentPassword, newPassword } = this.pwForm.getRawValue();
-    this.http.patch(`${environment.apiUrl}/auth/me/password`, { currentPassword, newPassword }).subscribe({
-      next: () => {
-        this.snack.open('Password alterada com sucesso.', 'OK', { duration: 3000 });
-        this.pwForm.reset();
-        this.savingPw.set(false);
-      },
-      error: err => {
-        this.snack.open(err.error?.error ?? 'Erro ao alterar a password.', 'OK', { duration: 3000 });
-        this.savingPw.set(false);
-      },
-    });
+  /** Primeira letra do nome, para o avatar. */
+  initial(): string {
+    return this.user()?.name?.charAt(0).toUpperCase() ?? '?';
   }
 }

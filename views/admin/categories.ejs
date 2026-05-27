@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categorias — Marketplace</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="container">
+    <h1 class="page-title">Categorias de Produtos</h1>
+
+    <% if (error)   { %><div class="alert alert-error"   style="margin-bottom:1rem">⚠ <%= error %></div><% } %>
+    <% if (success) { %><div class="alert alert-success" style="margin-bottom:1rem">✓ <%= success %></div><% } %>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+
+      <!-- Criar categoria -->
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:1.25rem">Nova Categoria</h3>
+        <form action="/admin/categories" method="POST" style="display:flex;gap:.75rem">
+          <input type="text" name="name" placeholder="Ex: Congelados"
+            required style="flex:1">
+          <button class="btn btn-primary">Criar</button>
+        </form>
+      </div>
+
+      <!-- Lista de categorias -->
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:1.25rem">
+          Categorias existentes (<%= categories.length %>)
+        </h3>
+        <% if (categories.length === 0) { %>
+          <p style="color:var(--text-3);font-size:.875rem">Nenhuma categoria criada ainda.</p>
+        <% } else { %>
+          <% categories.forEach(c => { %>
+            <div style="display:flex;justify-content:space-between;align-items:center;
+                        padding:.5rem 0;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span class="badge <%= c.active ? 'badge--success' : 'badge--danger' %>">
+                  <%= c.active ? 'Ativa' : 'Inativa' %>
+                </span>
+                <span style="font-size:.9rem"><%= c.name %></span>
+              </div>
+              <div class="actions">
+                <form action="/admin/categories/<%= c._id %>/toggle" method="POST" style="display:inline">
+                  <button class="btn btn-sm <%= c.active ? 'btn-warning' : 'btn-success' %>">
+                    <%= c.active ? 'Desativar' : 'Ativar' %>
+                  </button>
+                </form>
+                <form action="/admin/categories/<%= c._id %>/delete" method="POST" style="display:inline"
+                      onsubmit="return confirm('Eliminar categoria \'<%= c.name %>\'? Os produtos com esta categoria ficam sem categoria válida.')">
+                  <button class="btn btn-sm btn-danger">Eliminar</button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

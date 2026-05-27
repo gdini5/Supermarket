@@ -1,0 +1,54 @@
+<header class="nav">
+  <a routerLink="/" class="brand">
+    <span class="brand-mark">M</span>
+    <span class="brand-word">Marketplace</span>
+  </a>
+
+  <nav class="nav-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+      >Início</a
+    >
+    <a routerLink="/shop" routerLinkActive="active">Loja</a>
+  </nav>
+
+  <div class="nav-actions">
+    @if (auth.isAuthenticated()) {
+      <a
+        routerLink="/cart"
+        class="icon-btn"
+        aria-label="Carrinho"
+        matTooltip="O teu carrinho"
+        [matBadge]="cart.cartCount()"
+        [matBadgeHidden]="cart.cartCount() === 0"
+        matBadgeColor="warn"
+        matBadgeSize="small"
+      >
+        <mat-icon>shopping_bag</mat-icon>
+      </a>
+
+      <button class="user-chip" [matMenuTriggerFor]="menu">
+        <span class="avatar">{{ auth.currentUser()?.name?.charAt(0) }}</span>
+        <span class="user-name">{{ auth.currentUser()?.name }}</span>
+        <mat-icon>expand_more</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu" class="fresco-menu">
+        <a mat-menu-item routerLink="/profile">
+          <mat-icon>person</mat-icon>
+          <span>O meu perfil</span>
+        </a>
+        <a mat-menu-item routerLink="/orders">
+          <mat-icon>receipt_long</mat-icon>
+          <span>As minhas encomendas</span>
+        </a>
+        <button mat-menu-item (click)="auth.logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Terminar sessão</span>
+        </button>
+      </mat-menu>
+    } @else {
+      <a routerLink="/login" class="ghost-btn">Entrar</a>
+      <a routerLink="/register" class="solid-btn">Criar conta</a>
+    }
+  </div>
+</header>

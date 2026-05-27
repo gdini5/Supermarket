@@ -67,6 +67,7 @@ export const routes: Routes = [
   canActivate: [authGuard],
   title: 'Detalhe da encomenda | Marketplace',
 },
+
 {
   path: 'profile',
   loadComponent: () => import('./components/profile/profile').then(m => m.Profile),

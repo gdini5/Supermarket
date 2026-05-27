@@ -1,0 +1,130 @@
+.cart-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+
+  h1 {
+    margin-bottom: 2rem;
+    color: var(--mat-sys-primary);
+  }
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 4rem 2rem;
+
+  mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    color: var(--mat-sys-outline);
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.cart-content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cart-item {
+  .item-layout {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    gap: 1.5rem;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  .item-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .item-info {
+    flex: 1;
+    h3 { margin: 0; }
+    .price { color: var(--mat-sys-on-surface-variant); margin: 0.25rem 0 0; }
+  }
+
+  .item-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    background: var(--mat-sys-surface-container-highest);
+    border-radius: 24px;
+    padding: 0 4px;
+
+    .quantity {
+      min-width: 30px;
+      text-align: center;
+      font-weight: 500;
+    }
+  }
+
+  .item-total {
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 80px;
+    text-align: right;
+  }
+}
+
+.cart-summary {
+  mat-card {
+    position: sticky;
+    top: 2rem;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+
+    &.total {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--mat-sys-primary);
+    }
+  }
+
+  mat-card-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+
+    .w-100 { width: 100%; margin: 0; }
+  }
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+}

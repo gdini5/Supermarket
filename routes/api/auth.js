@@ -228,52 +228,8 @@ router.get('/me', apiAuth, async (req, res, next) => {
 /**
  * @swagger
  * /auth/me:
- *   patch:
- *     summary: Actualizar dados do utilizador autenticado
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:    { type: string }
- *               phone:   { type: string }
- *               address: { type: string }
- *     responses:
- *       200:
- *         description: Utilizador actualizado
- *       401:
- *         description: Não autenticado
- */
-router.patch('/me', apiAuth, async (req, res, next) => {
-  try {
-    const { name, phone, address } = req.body;
-    const update = {};
-    if (name    !== undefined) update.name    = String(name).trim();
-    if (phone   !== undefined) update.phone   = String(phone).trim();
-    if (address !== undefined) update.address = String(address).trim();
-
-    const user = await User.findByIdAndUpdate(
-      req.apiUser.userId,
-      { $set: update },
-      { new: true }
-    ).select('-password');
-
-    if (!user) return res.status(404).json({ error: 'Utilizador não encontrado.' });
-    res.json(user);
-  } catch (err) {
-    next(err);
-  }
-});
-
-/**
- * @swagger
- * /auth/me/password:
- *   patch:
- *     summary: Alterar password do utilizador autenticado
+ *   put:
+ *     summary: Atualiza os dados do perfil do utilizador autenticado
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -283,36 +239,39 @@ router.patch('/me', apiAuth, async (req, res, next) => {
  *         application/json:
  *           schema:
  *             type: object
- *             required: [currentPassword, newPassword]
  *             properties:
- *               currentPassword: { type: string }
- *               newPassword:     { type: string, minLength: 6 }
+ *               name:    { type: string }
+ *               phone:   { type: string }
+ *               address: { type: string }
  *     responses:
- *       200:
- *         description: Password alterada
- *       400:
- *         description: Password actual incorrecta ou nova password inválida
+ *       200: { description: Perfil atualizado }
+ *       400: { description: Dados inválidos }
+ *       404: { description: Utilizador não encontrado }
  */
-router.patch('/me/password', apiAuth, async (req, res, next) => {
+router.put('/me', apiAuth, async (req, res, next) => {
   try {
-    const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword)
-      return res.status(400).json({ error: 'currentPassword e newPassword são obrigatórios.' });
+    const { name, phone, address } = req.body;
 
-    if (newPassword.length < 6)
-      return res.status(400).json({ error: 'A nova password deve ter pelo menos 6 caracteres.' });
+    // Só permitimos alterar estes campos. Email e role não são alteráveis
+    // por aqui (email é identificador de login; role é gerido pelo admin).
+    const updates = {};
+    if (typeof name === 'string' && name.trim()) updates.name = name.trim();
+    if (typeof phone === 'string' && phone.trim()) updates.phone = phone.trim();
+    if (typeof address === 'string' && address.trim()) updates.address = address.trim();
 
-    const user = await User.findById(req.apiUser.userId);
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'Nada para atualizar.' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.apiUser.userId,
+      { $set: updates },
+      { new: true, runValidators: true },
+    ).select('-password');
+
     if (!user) return res.status(404).json({ error: 'Utilizador não encontrado.' });
 
-    const valid = await user.comparePassword(currentPassword);
-    if (!valid)
-      return res.status(400).json({ error: 'A password actual está incorrecta.' });
-
-    user.password = newPassword;
-    await user.save();
-
-    res.json({ message: 'Password alterada com sucesso.' });
+    res.json(user);
   } catch (err) {
     next(err);
   }

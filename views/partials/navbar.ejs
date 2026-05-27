@@ -1,16 +1,24 @@
 <nav class="navbar">
   <a href="/" class="navbar-brand">🛒 Marketplace</a>
-  <ul class="nav-links">
 
+  <!-- Botão hamburger (visível só em mobile) -->
+  <button class="nav-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
+  <ul class="nav-links" id="navLinks">
     <% if (currentRole === 'admin') { %>
       <li><a href="/admin/dashboard">Dashboard</a></li>
       <li><a href="/admin/supermarkets">Supermercados</a></li>
       <li><a href="/admin/users">Utilizadores</a></li>
+      <li><a href="/admin/categories">Categorias</a></li>
 
     <% } else if (currentRole === 'supermarket') { %>
       <li><a href="/supermarket/dashboard">Dashboard</a></li>
       <li><a href="/products">Produtos</a></li>
       <li><a href="/supermarket/pos">Caixa</a></li>
+      <li><a href="/supermarket/delivery">Entregas</a></li>
+      <li><a href="/supermarket/location">Localização</a></li>
       <li><a href="/orders">Encomendas</a></li>
 
     <% } else if (currentRole === 'courier') { %>
@@ -30,14 +38,30 @@
 
     <% if (currentUser) { %>
       <% if (currentName) { %>
-        <li>
-          <span style="color:var(--text-3);font-size:.82rem;padding:.4rem .5rem;display:inline-block">
-            Olá, <%= currentName.split(' ')[0] %>
-          </span>
-        </li>
+        <li><span class="nav-username">Olá, <%= currentName.split(' ')[0] %></span></li>
       <% } %>
       <li><a href="/auth/logout" class="btn-logout">Sair</a></li>
     <% } %>
-
   </ul>
 </nav>
+
+<script>
+  (function () {
+    const btn   = document.getElementById('navToggle');
+    const links = document.getElementById('navLinks');
+    if (!btn || !links) return;
+    btn.addEventListener('click', () => {
+      const open = links.classList.toggle('nav-open');
+      btn.setAttribute('aria-expanded', open);
+      btn.classList.toggle('nav-toggle--open', open);
+    });
+    // Fechar ao clicar num link
+    links.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        links.classList.remove('nav-open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.classList.remove('nav-toggle--open');
+      });
+    });
+  })();
+</script>

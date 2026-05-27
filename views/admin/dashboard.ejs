@@ -3,15 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Marketplace</title>
+  <title>Dashboard Admin — Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
   <%- include('../partials/navbar') %>
   <main class="container">
-    <h1 class="page-title">Dashboard</h1>
+    <h1 class="page-title">Dashboard Admin</h1>
+
+    <% if (pendingSupermarkets > 0) { %>
+      <div class="alert alert-info" style="margin-bottom:1.5rem">
+        ⚠ Tens <strong><%= pendingSupermarkets %></strong> supermercado(s) a aguardar aprovação.
+        <a href="/admin/supermarkets" style="font-weight:700;margin-left:.5rem">Aprovar agora →</a>
+      </div>
+    <% } %>
 
     <div class="stats-grid">
       <div class="stat-card">
@@ -43,6 +49,7 @@
       <h2>Ações rápidas</h2>
       <a href="/admin/supermarkets" class="btn btn-primary">Gerir Supermercados</a>
       <a href="/admin/users"        class="btn btn-secondary">Gerir Utilizadores</a>
+      <a href="/admin/categories"   class="btn btn-secondary">Gerir Categorias</a>
     </div>
   </main>
   <%- include('../partials/footer') %>

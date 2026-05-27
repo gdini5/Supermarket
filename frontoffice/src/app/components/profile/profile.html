@@ -1,101 +1,96 @@
-<div class="profile-container">
+<div class="page">
   <h1>O meu perfil</h1>
 
   @if (loading()) {
-    <div class="loading-state">
-      <mat-spinner diameter="48"></mat-spinner>
-    </div>
-  } @else {
+    <div class="state"><mat-spinner diameter="40"></mat-spinner><p>A carregar…</p></div>
+  } @else if (user(); as u) {
     <div class="profile-grid">
-      <!-- Dados pessoais -->
-      <mat-card>
-        <mat-card-header>
-          <mat-icon mat-card-avatar>person</mat-icon>
-          <mat-card-title>Dados pessoais</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="form" class="profile-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Nome</mat-label>
-              <input matInput formControlName="name">
-              @if (form.controls.name.hasError('required')) {
-                <mat-error>Nome é obrigatório</mat-error>
-              }
-              @if (form.controls.name.hasError('minlength')) {
-                <mat-error>Mínimo 2 caracteres</mat-error>
-              }
-            </mat-form-field>
+      <!-- Cartão de identidade -->
+      <aside class="id-card">
+        <span class="avatar">{{ initial() }}</span>
+        <h2>{{ u.name }}</h2>
+        <span class="email">{{ u.email }}</span>
+        <span class="role-tag">Cliente</span>
+        @if (u.createdAt) {
+          <span class="member-since">Membro desde {{ u.createdAt | date:'MMMM yyyy' }}</span>
+        }
 
-            <mat-form-field appearance="outline">
-              <mat-label>Email</mat-label>
-              <input matInput formControlName="email">
-              <mat-hint>O email não pode ser alterado</mat-hint>
-            </mat-form-field>
+        @if (stats(); as s) {
+          <div class="stats">
+            <div class="stat">
+              <strong>{{ s.totalOrders }}</strong>
+              <span>{{ s.totalOrders === 1 ? 'encomenda' : 'encomendas' }}</span>
+            </div>
+            <div class="stat">
+              <strong>{{ s.totalSpent | currency:'EUR' }}</strong>
+              <span>total gasto</span>
+            </div>
+            @if (s.topProduct) {
+              <div class="stat wide">
+                <strong>{{ s.topProduct.name }}</strong>
+                <span>mais comprado ({{ s.topProduct.quantity }}×)</span>
+              </div>
+            }
+          </div>
+        }
+      </aside>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Telefone</mat-label>
-              <mat-icon matPrefix>phone</mat-icon>
-              <input matInput formControlName="phone">
-            </mat-form-field>
+      <!-- Formulário de edição -->
+      <section class="edit">
+        <h2>Dados pessoais</h2>
+        <p class="hint">Atualiza os teus dados. O email não pode ser alterado.</p>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Morada</mat-label>
-              <mat-icon matPrefix>place</mat-icon>
-              <input matInput formControlName="address">
-            </mat-form-field>
-          </form>
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-raised-button color="primary"
-                  [disabled]="saving()" (click)="saveProfile()">
-            @if (saving()) { A guardar… } @else { Guardar alterações }
-          </button>
-        </mat-card-actions>
-      </mat-card>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <label class="field">
+            <span>Nome completo</span>
+            <div class="input" [class.bad]="form.controls.name.touched && form.controls.name.invalid">
+              <mat-icon>person</mat-icon>
+              <input formControlName="name" autocomplete="name">
+            </div>
+            @if (form.controls.name.touched && form.controls.name.invalid) {
+              <small>O nome é obrigatório (mín. 2 caracteres).</small>
+            }
+          </label>
 
-      <!-- Alterar password -->
-      <mat-card>
-        <mat-card-header>
-          <mat-icon mat-card-avatar>lock</mat-icon>
-          <mat-card-title>Alterar password</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="pwForm" class="profile-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Password atual</mat-label>
-              <input matInput type="password" formControlName="currentPassword">
-              @if (pwForm.controls.currentPassword.hasError('required')) {
-                <mat-error>Campo obrigatório</mat-error>
-              }
-            </mat-form-field>
+          <label class="field">
+            <span>Email</span>
+            <div class="input locked">
+              <mat-icon>mail</mat-icon>
+              <input [value]="u.email" disabled>
+              <mat-icon class="lock">lock</mat-icon>
+            </div>
+          </label>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Nova password</mat-label>
-              <input matInput type="password" formControlName="newPassword">
-              @if (pwForm.controls.newPassword.hasError('required')) {
-                <mat-error>Campo obrigatório</mat-error>
-              }
-              @if (pwForm.controls.newPassword.hasError('minlength')) {
-                <mat-error>Mínimo 6 caracteres</mat-error>
-              }
-            </mat-form-field>
+          <label class="field">
+            <span>Telefone</span>
+            <div class="input" [class.bad]="form.controls.phone.touched && form.controls.phone.invalid">
+              <mat-icon>call</mat-icon>
+              <input formControlName="phone" autocomplete="tel" inputmode="tel">
+            </div>
+            @if (form.controls.phone.touched && form.controls.phone.invalid) {
+              <small>O telefone é obrigatório.</small>
+            }
+          </label>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Confirmar nova password</mat-label>
-              <input matInput type="password" formControlName="confirm">
-              @if (pwForm.hasError('mismatch') && pwForm.controls.confirm.touched) {
-                <mat-error>As passwords não coincidem</mat-error>
-              }
-            </mat-form-field>
-          </form>
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-raised-button color="accent"
-                  [disabled]="savingPw()" (click)="changePassword()">
-            @if (savingPw()) { A guardar… } @else { Alterar password }
-          </button>
-        </mat-card-actions>
-      </mat-card>
+          <label class="field">
+            <span>Morada</span>
+            <div class="input" [class.bad]="form.controls.address.touched && form.controls.address.invalid">
+              <mat-icon>place</mat-icon>
+              <input formControlName="address" autocomplete="street-address">
+            </div>
+            @if (form.controls.address.touched && form.controls.address.invalid) {
+              <small>A morada é obrigatória.</small>
+            }
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="btn-lime" [disabled]="saving() || form.invalid || form.pristine">
+              {{ saving() ? 'A guardar…' : 'Guardar alterações' }}
+            </button>
+            <a routerLink="/orders" class="btn-ghost">As minhas encomendas</a>
+          </div>
+        </form>
+      </section>
     </div>
   }
 </div>

@@ -1,0 +1,127 @@
+<div class="shop">
+  <!-- ─── Sidebar de filtros ─── -->
+  <aside class="filters" [formGroup]="filterForm">
+    <div class="filters-head">
+      <h2>Filtros</h2>
+      <button type="button" class="clear-link" (click)="clearFilters()">Limpar</button>
+    </div>
+
+    <label class="field">
+      <span class="field-label">Pesquisar</span>
+      <div class="input-wrap">
+        <mat-icon>search</mat-icon>
+        <input formControlName="search" placeholder="leite, pão, maçã…" autocomplete="off">
+      </div>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Categoria</span>
+      <div class="select-wrap">
+        <select formControlName="category">
+          <option value="">Todas</option>
+          @for (c of categories(); track c._id) {
+            <option [value]="c.name">{{ c.name }}</option>
+          }
+        </select>
+        <mat-icon>expand_more</mat-icon>
+      </div>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Supermercado</span>
+      <div class="select-wrap">
+        <select formControlName="supermarketId">
+          <option value="">Todos</option>
+          @for (s of supermarkets(); track s._id) {
+            <option [value]="s._id">{{ s.name }}</option>
+          }
+        </select>
+        <mat-icon>expand_more</mat-icon>
+      </div>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Ordenar por preço</span>
+      <div class="sort-toggle">
+        <button type="button"
+          [class.on]="filterForm.controls.sort.value === 'price_asc'"
+          (click)="filterForm.controls.sort.setValue(filterForm.controls.sort.value === 'price_asc' ? '' : 'price_asc')">
+          <mat-icon>arrow_upward</mat-icon> Menor
+        </button>
+        <button type="button"
+          [class.on]="filterForm.controls.sort.value === 'price_desc'"
+          (click)="filterForm.controls.sort.setValue(filterForm.controls.sort.value === 'price_desc' ? '' : 'price_desc')">
+          <mat-icon>arrow_downward</mat-icon> Maior
+        </button>
+      </div>
+    </label>
+  </aside>
+
+  <!-- ─── Resultados ─── -->
+  <section class="results">
+    <header class="results-head">
+      <div>
+        <h1>Catálogo</h1>
+        @if (!loading()) {
+          <p class="result-count">{{ total() }} {{ total() === 1 ? 'produto' : 'produtos' }}</p>
+        }
+      </div>
+      @if (selectedSupermarketName()) {
+        <button class="sm-chip" (click)="clearSupermarketFilter()">
+          <mat-icon>storefront</mat-icon>
+          {{ selectedSupermarketName() }}
+          <mat-icon class="x">close</mat-icon>
+        </button>
+      }
+    </header>
+
+    @if (loading()) {
+      <div class="state">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>A procurar produtos…</p>
+      </div>
+    } @else if (products().length === 0) {
+      <div class="state">
+        <mat-icon>sentiment_dissatisfied</mat-icon>
+        <p>Nenhum produto com estes critérios.</p>
+        <button class="reset-btn" (click)="clearFilters()">Limpar filtros</button>
+      </div>
+    } @else {
+      <div class="product-grid">
+        @for (p of products(); track p._id; let i = $index) {
+          <a [routerLink]="['/products', p._id]" class="product-card" [style.animation-delay.ms]="i * 40">
+            <div class="thumb">
+              <img [src]="imageUrl(p)" [alt]="p.name" loading="lazy"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+              <div class="thumb-fallback"><mat-icon>shopping_basket</mat-icon></div>
+              @if (p.stock < 5 && p.stock > 0) {
+                <span class="stock-tag low">Últimas {{ p.stock }}</span>
+              } @else if (p.stock === 0) {
+                <span class="stock-tag out">Esgotado</span>
+              }
+            </div>
+
+            <div class="card-body">
+              <span class="cat">{{ p.category }}</span>
+              <h3>{{ p.name }}</h3>
+              <p class="sm"><mat-icon>storefront</mat-icon>{{ supermarketNameOf(p) }}</p>
+              <div class="price-row">
+                <span class="price">{{ p.price | currency:'EUR':'symbol':'1.2-2' }}</span>
+                <span class="unit">/ {{ p.priceUnit }}</span>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="pageSize()"
+        [pageIndex]="page() - 1"
+        [pageSizeOptions]="[12, 24, 48]"
+        (page)="onPage($event)"
+        showFirstLastButtons>
+      </mat-paginator>
+    }
+  </section>
+</div>

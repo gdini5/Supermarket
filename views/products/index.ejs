@@ -14,14 +14,18 @@
 
     <div class="toolbar">
       <form action="/products" method="GET" class="search-form">
-        <input type="text" name="search"
-          placeholder="Pesquisar produto..."
-          value="<%= search %>">
+        <input type="text" name="search" placeholder="Pesquisar produto..." value="<%= search %>">
         <select name="category">
           <option value="">Todas as categorias</option>
           <% categories.forEach(c => { %>
-            <option value="<%= c %>" <%= category === c ? 'selected' : '' %>><%= c %></option>
+            <option value="<%= c.name %>" <%= category === c.name ? 'selected' : '' %>><%= c.name %></option>
           <% }) %>
+        </select>
+        <select name="stockFilter">
+          <option value="">Todo o stock</option>
+          <option value="out"  <%= stockFilter === 'out'  ? 'selected' : '' %>>🔴 Sem stock</option>
+          <option value="low"  <%= stockFilter === 'low'  ? 'selected' : '' %>>🟡 Stock baixo</option>
+          <option value="ok"   <%= stockFilter === 'ok'   ? 'selected' : '' %>>🟢 Stock ok</option>
         </select>
         <button type="submit" class="btn btn-secondary">Filtrar</button>
         <% if (search || category) { %>
@@ -37,37 +41,38 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Imagem</th>
-            <th>Nome</th>
-            <th>Categoria</th>
-            <th>Preço</th>
-            <th>Stock</th>
-            <th>Estado</th>
-            <th>Ações</th>
+            <th>Imagem</th><th>Nome</th><th>Categoria</th>
+            <th>Preço</th><th>Stock</th><th>Estado</th><th>Ações</th>
           </tr>
         </thead>
         <tbody>
           <% products.forEach(p => { %>
             <tr>
-              <td>
-                <img src="/images/uploads/<%= p.image %>"
-                  alt="<%= p.name %>"
-                  style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"
+              <td data-label="Imagem">
+                <img src="/images/uploads/<%= p.image %>" alt="<%= p.name %>"
+                  class="product-thumb"
                   onerror="this.src='/images/uploads/default-product.png'">
               </td>
-              <td><strong><%= p.name %></strong>
+              <td data-label="Nome">
+                <strong><%= p.name %></strong>
                 <% if (p.description) { %>
-                  <p style="font-size:.78rem;color:var(--text-3);margin-top:.15rem"><%= p.description.substring(0, 50) %><%= p.description.length > 50 ? '…' : '' %></p>
+                  <p style="font-size:.78rem;color:var(--text-3);margin-top:.1rem">
+                    <%= p.description.substring(0,50) %><%= p.description.length>50?'…':'' %>
+                  </p>
                 <% } %>
               </td>
-              <td><span class="badge badge--neutral"><%= p.category %></span></td>
-              <td><strong><%= p.price.toFixed(2) %> €</strong></td>
-              <td>
-                <span class="badge <%= p.stock > 0 ? 'badge--success' : 'badge--danger' %>">
-                  <%= p.stock %> un.
-                </span>
+              <td data-label="Categoria"><span class="badge badge--neutral"><%= p.category %></span></td>
+              <td data-label="Preço"><strong><%= p.price.toFixed(2) %> €/<%= p.priceUnit || 'un.' %></strong></td>
+              <td data-label="Stock">
+                <% if (p.stock === 0) { %>
+                  <span class="badge badge--danger">🔴 Sem stock</span>
+                <% } else if (p.stock <= 5) { %>
+                  <span class="badge badge--warning">🟡 <%= p.stock %> un.</span>
+                <% } else { %>
+                  <span class="badge badge--success">🟢 <%= p.stock %> un.</span>
+                <% } %>
               </td>
-              <td>
+              <td data-label="Estado">
                 <span class="badge <%= p.active ? 'badge--success' : 'badge--danger' %>">
                   <%= p.active ? 'Ativo' : 'Inativo' %>
                 </span>
@@ -75,7 +80,7 @@
               <td class="actions">
                 <a href="/products/<%= p._id %>/edit" class="btn btn-sm btn-secondary">Editar</a>
                 <form action="/products/<%= p._id %>/delete" method="POST" style="display:inline"
-                      onsubmit="return confirm('Tens a certeza que queres eliminar este produto?')">
+                      onsubmit="return confirm('Eliminar este produto?')">
                   <button class="btn btn-sm btn-danger">Eliminar</button>
                 </form>
               </td>

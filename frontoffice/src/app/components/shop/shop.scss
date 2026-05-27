@@ -1,0 +1,261 @@
+:host {
+  display: block;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+}
+
+.shop {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
+  align-items: start;
+  @media (max-width: 880px) { grid-template-columns: 1fr; }
+}
+
+// ─── Filtros ─────────────────────────────────────────
+.filters {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+  padding: 1.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  @media (max-width: 880px) { position: static; }
+}
+
+.filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 { font-size: 1.15rem; }
+  .clear-link {
+    background: none; border: none; cursor: pointer;
+    color: var(--lime); font-family: var(--font-body);
+    font-weight: 600; font-size: 0.85rem;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.field { display: block; }
+.field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin-bottom: 0.5rem;
+}
+
+.input-wrap, .select-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  transition: border-color 0.15s;
+  &:focus-within { border-color: var(--lime); }
+
+  mat-icon { color: var(--ink-faint); font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+}
+.input-wrap {
+  padding: 0 0.7rem;
+  input {
+    flex: 1; background: none; border: none; outline: none;
+    padding: 0.6rem 0.5rem; color: var(--ink);
+    font-family: var(--font-body); font-size: 0.92rem;
+    &::placeholder { color: var(--ink-faint); }
+  }
+}
+.select-wrap {
+  position: relative;
+  padding-right: 0.7rem;
+  select {
+    flex: 1; background: none; border: none; outline: none;
+    padding: 0.6rem 0.7rem; color: var(--ink);
+    font-family: var(--font-body); font-size: 0.92rem;
+    appearance: none; cursor: pointer;
+    option { background: var(--bg-elevated); color: var(--ink); }
+  }
+  mat-icon { pointer-events: none; }
+}
+
+.sort-toggle {
+  display: flex;
+  gap: 0.5rem;
+  button {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.55rem;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    color: var(--ink-soft);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+    &:hover { border-color: var(--line-strong); }
+    &.on {
+      background: var(--lime); color: var(--lime-ink); border-color: var(--lime);
+    }
+  }
+}
+
+// ─── Resultados ──────────────────────────────────────
+.results { min-width: 0; }
+
+.results-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+
+  h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+  .result-count { color: var(--ink-faint); font-size: 0.9rem; margin-top: 0.3rem; }
+}
+
+.sm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: none;
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+  .x { background: rgba(0,0,0,.15); border-radius: 50%; padding: 1px; }
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  color: var(--ink-faint);
+  text-align: center;
+  mat-icon { font-size: 3rem; width: 3rem; height: 3rem; opacity: 0.6; }
+}
+.reset-btn {
+  padding: 0.6rem 1.3rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  cursor: pointer;
+  &:hover { background: var(--lime); color: var(--lime-ink); }
+}
+
+// ─── Grelha de produtos ──────────────────────────────
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.2s cubic-bezier(.2,.7,.3,1), border-color 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--lime);
+    .thumb img { transform: scale(1.06); }
+  }
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 1.1;
+  background: var(--bg-surface-2);
+  overflow: hidden;
+
+  img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  .thumb-fallback {
+    display: none;
+    place-items: center;
+    width: 100%; height: 100%;
+    mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; color: var(--ink-faint); }
+  }
+}
+
+.stock-tag {
+  position: absolute;
+  top: 0.6rem; left: 0.6rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--r-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  &.low { background: var(--tang); color: var(--tang-ink); }
+  &.out { background: var(--bg-base); color: var(--ink-soft); border: 1px solid var(--line-strong); }
+}
+
+.card-body { padding: 0.9rem 1rem 1.1rem; display: flex; flex-direction: column; flex: 1; }
+.cat {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+.product-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.3rem 0 0.5rem;
+  line-height: 1.15;
+}
+.sm {
+  display: flex; align-items: center; gap: 0.3rem;
+  font-size: 0.82rem; color: var(--ink-soft);
+  margin-bottom: 0.7rem;
+  mat-icon { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; color: var(--ink-faint); }
+}
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-top: auto;
+  .price {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--lime);
+  }
+  .unit { font-size: 0.78rem; color: var(--ink-faint); }
+}
+
+// ─── Paginador (Material) afinado ────────────────────
+mat-paginator { background: transparent; border-radius: var(--r-md); }

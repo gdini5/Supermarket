@@ -1,0 +1,43 @@
+<div class="page">
+  <h1>As minhas encomendas</h1>
+
+  @if (loading()) {
+    <div class="state"><p>A carregar…</p></div>
+  } @else if (error()) {
+    <div class="state error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="empty">
+      <mat-icon>receipt_long</mat-icon>
+      <h2>Sem encomendas</h2>
+      <p>Quando fizeres a tua primeira encomenda, ela aparece aqui.</p>
+      <a routerLink="/shop" class="btn-lime">Começar a comprar</a>
+    </div>
+  } @else {
+    <div class="orders">
+      @for (order of orders(); track order._id) {
+        <a [routerLink]="['/orders', order._id]" class="order">
+          <div class="order-l">
+            <span class="oid">#{{ order._id.slice(-6).toUpperCase() }}</span>
+            <span class="odate">{{ order.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+          </div>
+          <div class="order-m">
+            <span class="osm"><mat-icon>storefront</mat-icon>{{ order.supermarketId?.name }}</span>
+            <span class="oitems"
+              >{{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'itens' }}</span
+            >
+          </div>
+          <div class="order-r">
+            <span class="pill" [attr.data-status]="order.status">{{
+              getStatusLabel(order.status)
+            }}</span>
+            <span class="ototal">{{ order.total | currency: 'EUR' }}</span>
+          </div>
+          <mat-icon class="ogo">arrow_outward</mat-icon>
+        </a>
+      }
+    </div>
+  }
+</div>

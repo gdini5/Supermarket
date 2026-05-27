@@ -1,0 +1,67 @@
+<div class="page">
+  <h1>O teu carrinho</h1>
+
+  @if (loading()) {
+    <div class="state"><p>A carregar…</p></div>
+  } @else if (error()) {
+    <div class="state error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button class="btn-ghost" (click)="ngOnInit()">Tentar novamente</button>
+    </div>
+  } @else if (!cart() || cart()?.items?.length === 0) {
+    <div class="empty">
+      <mat-icon>remove_shopping_cart</mat-icon>
+      <h2>Carrinho vazio</h2>
+      <p>Ainda não adicionaste nada. Vê o que os mercados têm para ti.</p>
+      <a routerLink="/shop" class="btn-lime">Explorar a loja</a>
+    </div>
+  } @else {
+    <div class="cart-grid">
+      <div class="items">
+        @for (item of cart()?.items; track item.productId) {
+          <div class="item">
+            <div class="item-thumb">
+              <img
+                [src]="imageUrl(item)"
+                [alt]="item.name"
+                (error)="onImgError($event)"
+              />
+              <mat-icon class="thumb-fb-icon">shopping_basket</mat-icon>
+            </div>
+            <div class="item-info">
+              <h3>{{ item.name }}</h3>
+              <span class="unit-price"
+                >{{ item.price | currency: 'EUR' }} / {{ item.priceUnit }}</span
+              >
+            </div>
+            <div class="qty">
+              <button (click)="updateQuantity(item, -1)" [disabled]="item.quantity <= 1">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span>{{ item.quantity }}</span>
+              <button (click)="updateQuantity(item, 1)"><mat-icon>add</mat-icon></button>
+            </div>
+            <div class="line-total">{{ item.price * item.quantity | currency: 'EUR' }}</div>
+            <button class="remove" (click)="removeItem(item)" matTooltip="Remover">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+
+      <aside class="summary">
+        <h2>Resumo</h2>
+        <div class="srow">
+          <span>Subtotal</span><span>{{ total() | currency: 'EUR' }}</span>
+        </div>
+        <div class="srow muted"><span>Entrega</span><span>calculada no checkout</span></div>
+        <div class="srow total">
+          <span>Total</span><span>{{ total() | currency: 'EUR' }}</span>
+        </div>
+        <a routerLink="/checkout" class="btn-lime full">Finalizar encomenda</a>
+        <button class="btn-ghost full" (click)="clearCart()">Esvaziar carrinho</button>
+      </aside>
+    </div>
+  }
+</div>

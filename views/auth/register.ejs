@@ -133,10 +133,10 @@
               <label for="vehicle">Meio de transporte</label>
               <select id="vehicle" name="vehicle">
                 <option value="">Seleciona...</option>
-                <option value="bicycle">Bicicleta</option>
-                <option value="motorcycle">Mota</option>
-                <option value="car">Carro</option>
-                <option value="foot">A pé</option>
+                <option value="bicycle">🚲 Bicicleta</option>
+                <option value="motorcycle">🏍️ Mota</option>
+                <option value="car">🚗 Carro</option>
+                <option value="foot">🚶 A pé</option>
               </select>
               <p class="field-msg" id="vehicleMsg"></p>
             </div>
@@ -199,7 +199,16 @@
 
     function val(id) { return document.getElementById(id)?.value?.trim() || ''; }
 
-    // ── Role selector ─────────────────────────────────────────────────────────
+    // ── Emoji por veículo ─────────────────────────────────────────────────────
+    const vehicleEmoji = {
+      '':           '🚴',
+      'bicycle':    '🚲',
+      'motorcycle': '🏍️',
+      'car':        '🚗',
+      'foot':       '🚶'
+    };
+
+    // ── Dados do painel direito por role ──────────────────────────────────────
     const roleData = {
       client: {
         icon: '🛍️',
@@ -227,6 +236,22 @@
       }
     };
 
+    // ── Animar painel direito ─────────────────────────────────────────────────
+    function animateVisual(icon, title, desc, tags) {
+      const content = document.getElementById('visualContent');
+      content.style.opacity   = '0';
+      content.style.transform = 'translateY(12px)';
+      setTimeout(() => {
+        document.getElementById('visualIcon').textContent = icon;
+        document.getElementById('visualTitle').innerHTML  = title;
+        document.getElementById('visualDesc').textContent = desc;
+        document.getElementById('visualTags').innerHTML   = tags.map(t => `<span>${t}</span>`).join('');
+        content.style.opacity   = '1';
+        content.style.transform = 'translateY(0)';
+      }, 180);
+    }
+
+    // ── Role selector ─────────────────────────────────────────────────────────
     document.querySelectorAll('.role-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -235,39 +260,46 @@
         const role = btn.dataset.role;
         document.getElementById('roleInput').value = role;
 
-        // mostrar/esconder campos extra
         document.getElementById('supermarketFields').style.display = role === 'supermarket' ? 'block' : 'none';
-        document.getElementById('courierFields').style.display      = role === 'courier'      ? 'block' : 'none';
+        document.getElementById('courierFields').style.display      = role === 'courier'     ? 'block' : 'none';
 
-        // atualizar label e placeholder do nome
         const data = roleData[role];
-        document.getElementById('nameLabel').textContent      = data.nameLabel;
-        document.getElementById('name').placeholder           = data.namePlaceholder;
+        document.getElementById('nameLabel').textContent = data.nameLabel;
+        document.getElementById('name').placeholder      = data.namePlaceholder;
 
-        // animar o painel direito
-        const content = document.getElementById('visualContent');
-        content.style.opacity = '0';
-        content.style.transform = 'translateY(12px)';
-        setTimeout(() => {
-          document.getElementById('visualIcon').textContent  = data.icon;
-          document.getElementById('visualTitle').innerHTML   = data.title;
-          document.getElementById('visualDesc').textContent  = data.desc;
-          const tagsEl = document.getElementById('visualTags');
-          tagsEl.innerHTML = data.tags.map(t => `<span>${t}</span>`).join('');
-          content.style.opacity = '1';
-          content.style.transform = 'translateY(0)';
-        }, 180);
+        // Ao mudar para courier, usa o emoji do veículo já seleccionado (se houver)
+        let icon = data.icon;
+        if (role === 'courier') {
+          const v = document.getElementById('vehicle').value;
+          icon = vehicleEmoji[v] || '🚴';
+        }
+
+        animateVisual(icon, data.title, data.desc, data.tags);
       });
+    });
+
+    // ── Emoji muda quando o veículo muda ─────────────────────────────────────
+    document.getElementById('vehicle').addEventListener('change', function () {
+      if (document.getElementById('roleInput').value !== 'courier') return;
+      const emoji = vehicleEmoji[this.value] || '🚴';
+      const iconEl = document.getElementById('visualIcon');
+      iconEl.style.transform = 'scale(0.7)';
+      iconEl.style.opacity   = '0';
+      setTimeout(() => {
+        iconEl.textContent     = emoji;
+        iconEl.style.transform = 'scale(1)';
+        iconEl.style.opacity   = '1';
+      }, 150);
     });
 
     // ── Validações em tempo real ──────────────────────────────────────────────
     const nameInput = document.getElementById('name');
     nameInput.addEventListener('blur', () => {
       const v = nameInput.value.trim();
-      if (!v)                 setMsg('nameMsg', nameInput, 'err', '✕ Campo obrigatório');
-      else if (v.length < 3)  setMsg('nameMsg', nameInput, 'err', '✕ Nome demasiado curto');
+      if (!v)                   setMsg('nameMsg', nameInput, 'err', '✕ Campo obrigatório');
+      else if (v.length < 3)    setMsg('nameMsg', nameInput, 'err', '✕ Nome demasiado curto');
       else if (!nameRe.test(v)) setMsg('nameMsg', nameInput, 'err', '✕ O nome só pode conter letras');
-      else                    setMsg('nameMsg', nameInput, 'ok',  '✓ Nome válido');
+      else                      setMsg('nameMsg', nameInput, 'ok',  '✓ Nome válido');
     });
 
     const emailInput = document.getElementById('email');
@@ -299,7 +331,7 @@
     pwInput.addEventListener('input', () => {
       const pw = pwInput.value;
       const s  = pw ? calcStrength(pw) : 0;
-      strengthBar.className = 'strength-bar' + (pw ? ' s' + s : '');
+      strengthBar.className   = 'strength-bar' + (pw ? ' s' + s : '');
       strengthLbl.textContent = pw ? 'Força: ' + (levels[s] || 'Muito fraca') : '';
       if (pw && pw.length < 6) setMsg('passwordMsg', pwInput, 'err', '✕ Mínimo 6 caracteres');
       else if (pw)             setMsg('passwordMsg', pwInput, 'ok',  '✓ Password aceite');
@@ -309,9 +341,9 @@
 
     const confirmInput = document.getElementById('confirm');
     function validateConfirm() {
-      if (!confirmInput.value)             setMsg('confirmMsg', confirmInput, 'err', '✕ Campo obrigatório');
-      else if (pwInput.value !== confirmInput.value) setMsg('confirmMsg', confirmInput, 'err', '✕ Passwords não coincidem');
-      else                                 setMsg('confirmMsg', confirmInput, 'ok',  '✓ Passwords coincidem');
+      if (!confirmInput.value)                        setMsg('confirmMsg', confirmInput, 'err', '✕ Campo obrigatório');
+      else if (pwInput.value !== confirmInput.value)  setMsg('confirmMsg', confirmInput, 'err', '✕ Passwords não coincidem');
+      else                                            setMsg('confirmMsg', confirmInput, 'ok',  '✓ Passwords coincidem');
     }
     confirmInput.addEventListener('input', validateConfirm);
     confirmInput.addEventListener('blur',  validateConfirm);
@@ -319,9 +351,9 @@
     const phoneInput = document.getElementById('phone');
     phoneInput.addEventListener('blur', () => {
       const v = phoneInput.value.trim();
-      if (!v)               setMsg('phoneMsg', phoneInput, 'err', '✕ Campo obrigatório');
+      if (!v)                    setMsg('phoneMsg', phoneInput, 'err', '✕ Campo obrigatório');
       else if (!phoneRe.test(v)) setMsg('phoneMsg', phoneInput, 'err', '✕ Número inválido (ex: 912345678)');
-      else                  setMsg('phoneMsg', phoneInput, 'ok',  '✓ Número válido');
+      else                       setMsg('phoneMsg', phoneInput, 'ok',  '✓ Número válido');
     });
 
     const addressInput = document.getElementById('address');
@@ -330,11 +362,11 @@
       else                            setMsg('addressMsg', addressInput, 'ok',  '✓');
     });
 
-    // ── Toggle visibilidade ───────────────────────────────────────────────────
+    // ── Toggle visibilidade de password ───────────────────────────────────────
     document.querySelectorAll('.toggle-pw').forEach(btn => {
       btn.addEventListener('click', () => {
         const t = document.getElementById(btn.dataset.target);
-        t.type = t.type === 'text' ? 'password' : 'text';
+        t.type          = t.type === 'text' ? 'password' : 'text';
         btn.textContent = t.type === 'text' ? '🙈' : '👁';
       });
     });
@@ -344,12 +376,12 @@
       let ok = true;
       const role = document.getElementById('roleInput').value;
 
-      if (!nameRe.test(val('name')) || val('name').length < 3)  { setMsg('nameMsg',    nameInput,    'err', '✕ Nome inválido');          ok = false; }
-      if (!emailRe.test(val('email')))                           { setMsg('emailMsg',   emailInput,   'err', '✕ Email inválido');         ok = false; }
-      if (val('password').length < 6)                            { setMsg('passwordMsg', pwInput,     'err', '✕ Mínimo 6 caracteres');    ok = false; }
-      if (pwInput.value !== confirmInput.value)                  { setMsg('confirmMsg', confirmInput, 'err', '✕ Passwords não coincidem'); ok = false; }
-      if (!phoneRe.test(val('phone')))                           { setMsg('phoneMsg',   phoneInput,   'err', '✕ Número inválido');        ok = false; }
-      if (!val('address'))                                       { setMsg('addressMsg', addressInput, 'err', '✕ Campo obrigatório');      ok = false; }
+      if (!nameRe.test(val('name')) || val('name').length < 3) { setMsg('nameMsg',    nameInput,    'err', '✕ Nome inválido');           ok = false; }
+      if (!emailRe.test(val('email')))                          { setMsg('emailMsg',   emailInput,   'err', '✕ Email inválido');          ok = false; }
+      if (val('password').length < 6)                           { setMsg('passwordMsg', pwInput,     'err', '✕ Mínimo 6 caracteres');     ok = false; }
+      if (pwInput.value !== confirmInput.value)                 { setMsg('confirmMsg', confirmInput, 'err', '✕ Passwords não coincidem'); ok = false; }
+      if (!phoneRe.test(val('phone')))                          { setMsg('phoneMsg',   phoneInput,   'err', '✕ Número inválido');         ok = false; }
+      if (!val('address'))                                      { setMsg('addressMsg', addressInput, 'err', '✕ Campo obrigatório');       ok = false; }
 
       if (role === 'supermarket') {
         if (!val('shopName'))    { setMsg('shopNameMsg',    document.getElementById('shopName'),    'err', '✕ Campo obrigatório'); ok = false; }

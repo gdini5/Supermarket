@@ -1,0 +1,165 @@
+:host { display: block; }
+
+.auth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 68px);
+  @media (max-width: 820px) { grid-template-columns: 1fr; }
+}
+
+// ─── Painel visual ───────────────────────────────────
+.auth-aside {
+  position: relative;
+  background: var(--lime);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 4rem);
+  @media (max-width: 820px) { display: none; }
+}
+.aside-blob {
+  position: absolute;
+  width: 360px; height: 360px;
+  background: var(--tang);
+  border-radius: 46% 54% 60% 40% / 55% 48% 52% 45%;
+  bottom: -80px; right: -60px;
+  opacity: 0.25;
+}
+.aside-content { position: relative; z-index: 1; }
+.aside-mark {
+  display: grid; place-items: center;
+  width: 56px; height: 56px;
+  background: var(--lime-ink);
+  color: var(--lime);
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 1.8rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+.aside-content h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.05;
+  color: var(--lime-ink);
+  letter-spacing: -0.03em;
+}
+.aside-content p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  color: rgba(26,36,0,.7);
+  font-weight: 500;
+}
+.aside-ticker {
+  position: absolute;
+  bottom: 1.5rem; left: 0; right: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  span {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: rgba(26,36,0,.45);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+// ─── Formulário ──────────────────────────────────────
+.auth-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: var(--bg-base);
+}
+.auth-box { width: 100%; max-width: 400px; }
+
+.auth-box h1 { font-size: 2rem; }
+.sub { color: var(--ink-soft); margin: 0.4rem 0 2rem; }
+
+.auth-form { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.field { display: block; }
+.field > span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 0.45rem;
+}
+.input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.9rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within { border-color: var(--lime); box-shadow: 0 0 0 4px rgba(200,255,30,.12); }
+  &.bad { border-color: var(--tang); }
+
+  > mat-icon { color: var(--ink-faint); font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+  input {
+    flex: 1; background: none; border: none; outline: none;
+    padding: 0.8rem 0; color: var(--ink);
+    font-family: var(--font-body); font-size: 0.98rem;
+    &::placeholder { color: var(--ink-faint); }
+  }
+  .eye {
+    background: none; border: none; cursor: pointer; color: var(--ink-faint);
+    display: grid; place-items: center;
+    mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+    &:hover { color: var(--ink); }
+  }
+}
+.field small { display: block; margin-top: 0.4rem; color: var(--tang-soft); font-size: 0.82rem; }
+
+.alert {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255,92,40,.12);
+  border: 1px solid rgba(255,92,40,.3);
+  border-radius: var(--r-sm);
+  color: var(--tang-soft);
+  font-size: 0.9rem;
+  mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+}
+
+.submit {
+  display: flex; align-items: center; justify-content: center;
+  height: 50px;
+  margin-top: 0.5rem;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: none;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-lime); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.foot {
+  text-align: center;
+  margin-top: 1.6rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  a { font-weight: 600; }
+}
+
+// grid de 2 colunas para o registo
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  @media (max-width: 460px) { grid-template-columns: 1fr; }
+}
+
+// Caixa mais larga para o registo (mais campos)
+.auth-box.wide { max-width: 480px; }

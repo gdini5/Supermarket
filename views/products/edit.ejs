@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editar Produto — Marketplace</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
@@ -16,24 +15,19 @@
     </div>
 
     <div class="card" style="max-width:640px">
-      <% if (error) { %>
-        <div class="alert alert-error" style="margin-bottom:1.25rem">⚠ <%= error %></div>
-      <% } %>
+      <% if (error) { %><div class="alert alert-error" style="margin-bottom:1.25rem">⚠ <%= error %></div><% } %>
 
       <form id="editForm" action="/products/<%= product._id %>/update" method="POST"
             enctype="multipart/form-data" novalidate>
 
         <div class="form-group">
           <label for="name">Nome do produto</label>
-          <input type="text" id="name" name="name"
-            value="<%= product.name %>" required>
+          <input type="text" id="name" name="name" value="<%= product.name %>" required>
           <p class="field-msg" id="nameMsg"></p>
         </div>
 
         <div class="form-group">
-          <label for="description">Descrição
-            <span style="color:var(--text-3);font-weight:400">(opcional)</span>
-          </label>
+          <label for="description">Descrição <span style="color:var(--text-3);font-weight:400">(opcional)</span></label>
           <textarea id="description" name="description" rows="3"
             style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .9rem;color:var(--text);font-family:inherit;font-size:.9rem;resize:vertical"><%= product.description || '' %></textarea>
         </div>
@@ -43,50 +37,51 @@
           <select id="category" name="category" required>
             <option value="">Seleciona...</option>
             <% categories.forEach(c => { %>
-              <option value="<%= c %>" <%= product.category === c ? 'selected' : '' %>><%= c %></option>
+              <option value="<%= c.name %>" <%= product.category === c.name ? 'selected' : '' %>><%= c.name %></option>
             <% }) %>
+            <% if (!categories.find(c => c.name === product.category)) { %>
+              <option value="<%= product.category %>" selected><%= product.category %> (categoria removida)</option>
+            <% } %>
           </select>
-          <p class="field-msg" id="categoryMsg"></p>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div class="form-group">
-            <label for="price">Preço (€)</label>
-            <input type="number" id="price" name="price"
-              step="0.01" min="0" value="<%= product.price %>" required>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+          <div class="form-group" style="grid-column:1/3">
+            <label for="price">Preço</label>
+            <input type="number" id="price" name="price" step="0.01" min="0" value="<%= product.price %>" required>
             <p class="field-msg" id="priceMsg"></p>
           </div>
           <div class="form-group">
-            <label for="stock">Stock (unidades)</label>
-            <input type="number" id="stock" name="stock"
-              min="0" value="<%= product.stock %>" required>
-            <p class="field-msg" id="stockMsg"></p>
+            <label for="priceUnit">Unidade</label>
+            <select id="priceUnit" name="priceUnit">
+              <% PRICE_UNITS.forEach(u => { %>
+                <option value="<%= u %>" <%= (product.priceUnit || 'un.') === u ? 'selected' : '' %>><%= u %></option>
+              <% }) %>
+            </select>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="stock">Stock</label>
+          <input type="number" id="stock" name="stock" min="0" value="<%= product.stock %>" required>
+          <p class="field-msg" id="stockMsg"></p>
         </div>
 
         <div class="form-group">
           <label>Imagem atual</label>
           <div style="margin:.5rem 0 .75rem">
-            <img src="/images/uploads/<%= product.image %>"
-              alt="<%= product.name %>"
+            <img src="/images/uploads/<%= product.image %>" alt="<%= product.name %>"
               style="height:80px;border-radius:8px;border:1px solid var(--border);object-fit:cover"
               onerror="this.style.display='none'">
           </div>
-          <label for="image">Substituir imagem
-            <span style="color:var(--text-3);font-weight:400">(opcional)</span>
-          </label>
-          <input type="file" id="image" name="image" accept="image/*"
-            style="color:var(--text-2)">
-          <p style="font-size:.78rem;color:var(--text-3);margin-top:.3rem">
-            Deixa em branco para manter a imagem atual.
-          </p>
+          <label for="image">Substituir imagem <span style="color:var(--text-3);font-weight:400">(opcional)</span></label>
+          <input type="file" id="image" name="image" accept="image/*" style="color:var(--text-2)">
         </div>
 
         <div class="form-group">
           <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500">
-            <input type="checkbox" name="active"
-              <%= product.active ? 'checked' : '' %>
-              style="width:auto;accent-color:var(--blue);width:16px;height:16px">
+            <input type="checkbox" name="active" <%= product.active ? 'checked' : '' %>
+              style="width:16px;height:16px;accent-color:var(--blue)">
             Produto ativo (visível para clientes)
           </label>
         </div>
@@ -99,47 +94,13 @@
     </div>
   </main>
   <%- include('../partials/footer') %>
-
   <script>
-    function setMsg(id, input, type, text) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.textContent = text;
-      el.className = 'field-msg' + (text ? ' ' + type : '');
-      if (input) {
-        input.classList.remove('input-valid', 'input-invalid');
-        if (type === 'ok')  input.classList.add('input-valid');
-        if (type === 'err') input.classList.add('input-invalid');
-      }
-    }
-
-    const nameInput  = document.getElementById('name');
-    const priceInput = document.getElementById('price');
-    const stockInput = document.getElementById('stock');
-
-    nameInput.addEventListener('blur', () => {
-      if (!nameInput.value.trim()) setMsg('nameMsg', nameInput, 'err', '✕ Campo obrigatório');
-      else                         setMsg('nameMsg', nameInput, 'ok',  '✓');
-    });
-    priceInput.addEventListener('blur', () => {
-      const v = parseFloat(priceInput.value);
-      if (isNaN(v) || v < 0) setMsg('priceMsg', priceInput, 'err', '✕ Preço inválido');
-      else                   setMsg('priceMsg', priceInput, 'ok',  '✓');
-    });
-    stockInput.addEventListener('blur', () => {
-      const v = parseInt(stockInput.value);
-      if (isNaN(v) || v < 0) setMsg('stockMsg', stockInput, 'err', '✕ Stock inválido');
-      else                   setMsg('stockMsg', stockInput, 'ok',  '✓');
-    });
-
-    document.getElementById('editForm').addEventListener('submit', e => {
-      let ok = true;
-      if (!nameInput.value.trim())             { setMsg('nameMsg',  nameInput,  'err', '✕ Campo obrigatório'); ok = false; }
-      if (isNaN(parseFloat(priceInput.value))) { setMsg('priceMsg', priceInput, 'err', '✕ Preço inválido');   ok = false; }
-      if (isNaN(parseInt(stockInput.value)))   { setMsg('stockMsg', stockInput, 'err', '✕ Stock inválido');   ok = false; }
-      if (!ok) { e.preventDefault(); return; }
-      document.getElementById('submitBtn').textContent = 'A guardar…';
-    });
+    function setMsg(id,input,type,text){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='field-msg'+(text?' '+type:'');if(input){input.classList.remove('input-valid','input-invalid');if(type==='ok')input.classList.add('input-valid');if(type==='err')input.classList.add('input-invalid');}}
+    const nameInput=document.getElementById('name'),priceInput=document.getElementById('price'),stockInput=document.getElementById('stock');
+    nameInput.addEventListener('blur',()=>nameInput.value.trim()?setMsg('nameMsg',nameInput,'ok','✓'):setMsg('nameMsg',nameInput,'err','✕ Campo obrigatório'));
+    priceInput.addEventListener('blur',()=>!isNaN(parseFloat(priceInput.value))?setMsg('priceMsg',priceInput,'ok','✓'):setMsg('priceMsg',priceInput,'err','✕ Preço inválido'));
+    stockInput.addEventListener('blur',()=>!isNaN(parseInt(stockInput.value))?setMsg('stockMsg',stockInput,'ok','✓'):setMsg('stockMsg',stockInput,'err','✕ Stock inválido'));
+    document.getElementById('editForm').addEventListener('submit',e=>{let ok=true;if(!nameInput.value.trim()){setMsg('nameMsg',nameInput,'err','✕ Campo obrigatório');ok=false;}if(isNaN(parseFloat(priceInput.value))){setMsg('priceMsg',priceInput,'err','✕ Preço inválido');ok=false;}if(isNaN(parseInt(stockInput.value))){setMsg('stockMsg',stockInput,'err','✕ Stock inválido');ok=false;}if(!ok){e.preventDefault();return;}document.getElementById('submitBtn').textContent='A guardar…';});
   </script>
 </body>
 </html>

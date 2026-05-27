@@ -1,0 +1,300 @@
+// ════════════════════════════════════════════════════════════════════════
+//  Marketplace — Estilos globais
+//  Tema claro, cor primária verde sóbrio. Angular Material por baixo.
+// ════════════════════════════════════════════════════════════════════════
+
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$green-palette,
+        tertiary: mat.$green-palette,
+      ),
+      typography: (
+        plain-family: 'Inter, Roboto, sans-serif',
+        brand-family: 'Inter, Roboto, sans-serif',
+      ),
+      density: 0,
+    )
+  );
+  color-scheme: light;
+}
+
+// ─── Variáveis de tema ──────────────────────────────────────────────────
+// Mantêm os mesmos nomes de antes para não partir os componentes; só mudam
+// os valores (tema claro + verde sóbrio em vez do escuro/lima).
+:root {
+  // Fundos
+  --bg-base: #f5f6f4; // fundo principal (cinza muito claro)
+  --bg-surface: #ffffff; // superfícies (cards)
+  --bg-surface-2: #f0f1ee; // superfícies secundárias
+  --bg-elevated: #e8eae5; // hover / destaque
+
+  // Texto
+  --ink: #1f2420; // texto principal
+  --ink-soft: #55605a; // texto secundário
+  --ink-faint: #8a948e; // texto ténue / hints
+
+  // Cor primária (verde sóbrio) — substitui o "lime"
+  --lime: #2e7d52; // verde principal
+  --lime-deep: #256543; // verde para hover
+  --lime-ink: #ffffff; // texto sobre o verde
+
+  // Cor secundária (discreta) — substitui a "tangerina"
+  --tang: #c2410c; // laranja-queimado discreto (usado em alertas/badges)
+  --tang-soft: #d4541f;
+  --tang-ink: #ffffff;
+
+  // Apoios
+  --berry: #b03060; // usado pontualmente
+  --sky: #2563a8; // azul info
+
+  // Linhas
+  --line: #e0e2dd; // bordas subtis
+  --line-strong: #cbcfc8; // bordas em destaque
+
+  // Raios e sombras
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  --shadow-glow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lime: 0 2px 8px rgba(46, 125, 82, 0.2);
+
+  // Fontes — sem display pesado, tipografia normal
+  --font-display: 'Inter', 'Roboto', system-ui, sans-serif;
+  --font-body: 'Inter', 'Roboto', system-ui, sans-serif;
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--bg-base);
+  color: var(--ink);
+  font-family: var(--font-body);
+  margin: 0;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+// Box-sizing global
+*, *::before, *::after { box-sizing: border-box; }
+
+// ─── Reset de margens ───────────────────────────────────────────────────
+h1, h2, h3, h4, h5, h6, p { margin: 0; }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+// ─── Acessibilidade ─────────────────────────────────────────────────────
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+mat-icon[inline] { vertical-align: middle; }
+
+a { color: var(--lime); text-decoration: none; }
+
+::selection { background: var(--lime); color: var(--lime-ink); }
+
+// ─── Animações (mínimas) ────────────────────────────────────────────────
+// Mantidas como no-op/subtis para os componentes que lhes referem não partirem.
+@keyframes rise {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(0); }
+}
+
+// ─── Overrides Material ─────────────────────────────────────────────────
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #2f3a34;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-button-color: #8fd6ab;
+}
+//  LEAFLET — regras essenciais (garantia de que os tiles aparecem mesmo que
+//  o CSS do CDN não carregue ou seja sobreposto pela encapsulação Angular)
+// ════════════════════════════════════════════════════════════════════════
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background: #1a1a1a;
+  font-family: var(--font-body);
+}
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.leaflet-container .leaflet-overlay-pane svg {
+  max-width: none !important;
+  max-height: none !important;
+}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+  width: auto;
+  padding: 0;
+}
+.leaflet-tile {
+  filter: inherit;
+  visibility: hidden;
+}
+.leaflet-tile-loaded {
+  visibility: inherit;
+}
+.leaflet-pane {
+  z-index: 400;
+}
+.leaflet-tile-pane {
+  z-index: 200;
+}
+.leaflet-overlay-pane {
+  z-index: 400;
+}
+.leaflet-shadow-pane {
+  z-index: 500;
+}
+.leaflet-marker-pane {
+  z-index: 600;
+}
+.leaflet-popup-pane {
+  z-index: 700;
+}
+.leaflet-control {
+  z-index: 800;
+  position: relative;
+}
+.leaflet-top,
+.leaflet-bottom {
+  position: absolute;
+  z-index: 1000;
+  pointer-events: none;
+}
+.leaflet-top {
+  top: 0;
+}
+.leaflet-bottom {
+  bottom: 0;
+}
+.leaflet-left {
+  left: 0;
+}
+.leaflet-right {
+  right: 0;
+}
+.leaflet-control {
+  float: left;
+  clear: both;
+  pointer-events: auto;
+}
+.leaflet-right .leaflet-control {
+  float: right;
+}
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0 5px;
+  font-size: 11px;
+  color: #333;
+}
+.leaflet-popup {
+  position: absolute;
+  text-align: center;
+}
+.leaflet-popup-content-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  padding: 4px;
+}
+.leaflet-popup-content {
+  margin: 10px 14px;
+}
+.leaflet-popup-tip-container {
+  width: 40px;
+  height: 20px;
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.leaflet-popup-tip {
+  width: 17px;
+  height: 17px;
+  background: #fff;
+  transform: rotate(45deg);
+  margin: -10px auto 0;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px 8px;
+  color: #333;
+  text-decoration: none;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  LEAFLET — pin e popup customizados (criados via JS, fora do componente,
+//  por isso têm de estar no CSS global)
+// ════════════════════════════════════════════════════════════════════════
+.fresco-pin {
+  background: none;
+  border: none;
+}
+.fresco-pin .pin-inner {
+  width: 20px;
+  height: 20px;
+  background: var(--lime);
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.map-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 160px;
+  font-family: var(--font-body);
+}
+.map-popup strong { font-size: 1rem; color: #1f2420; }
+.map-popup span { font-size: 0.82rem; color: #666; }
+.map-popup .popup-btn {
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  background: var(--lime);
+  color: #fff;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+}

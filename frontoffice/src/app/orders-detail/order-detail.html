@@ -1,0 +1,107 @@
+<div class="detail-container">
+  <div class="header-actions">
+    <button mat-button routerLink="/orders">
+      <mat-icon>arrow_back</mat-icon> Voltar às encomendas
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">A carregar detalhe...</div>
+  } @else if (order(); as o) {
+    <div class="detail-grid">
+      <div class="main-info">
+        <mat-card class="status-card">
+          <mat-card-header>
+            <mat-card-title>Estado da Encomenda #{{ o._id.slice(-6).toUpperCase() }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            @if (o.status === 'cancelled') {
+              <div class="cancelled-banner">
+                <mat-icon>cancel</mat-icon>
+                <span>Esta encomenda foi cancelada.</span>
+              </div>
+            } @else {
+              <div class="timeline">
+                @for (step of statusSteps; track step.id) {
+                  <div class="step" [class.active]="isStepActive(step.id)">
+                    <div class="step-icon">
+                      <mat-icon>{{ step.icon }}</mat-icon>
+                    </div>
+                    <div class="step-label">{{ step.label }}</div>
+                  </div>
+                  @if (!$last) { <div class="step-line" [class.active]="isStepActive(statusSteps[$index+1].id)"></div> }
+                }
+              </div>
+            }
+          </mat-card-content>
+          @if (canCancel()) {
+            <mat-card-actions>
+              <button mat-stroked-button color="warn" (click)="cancelOrder()">Cancelar Encomenda</button>
+              <span class="cancel-hint">Disponível até 5 min após a confirmação</span>
+            </mat-card-actions>
+          }
+        </mat-card>
+
+        <mat-card class="items-card">
+          <mat-card-header>
+            <mat-card-title>Produtos</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="items-list">
+              @for (item of o.items; track item.productId) {
+                <div class="item-row">
+                  <span class="qty">{{ item.quantity }}x</span>
+                  <span class="name">{{ item.name }}</span>
+                  <span class="price">{{ (item.price * item.quantity) | currency:'EUR' }}</span>
+                </div>
+              }
+            </div>
+            <mat-divider></mat-divider>
+            <div class="totals">
+              <div class="row">
+                <span>Subtotal</span>
+                <span>{{ (o.total - o.deliveryCost) | currency:'EUR' }}</span>
+              </div>
+              <div class="row">
+                <span>Custo de Entrega ({{ o.deliveryMethod === 'pickup' ? 'Levantamento' : 'Courier' }})</span>
+                <span>{{ o.deliveryCost | currency:'EUR' }}</span>
+              </div>
+              <div class="row total">
+                <span>Total</span>
+                <span>{{ o.total | currency:'EUR' }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="side-info">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Informação</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-section">
+              <label>Supermercado</label>
+              <p>{{ o.supermarketId?.name }}</p>
+              <p class="small">{{ o.supermarketId?.address }}</p>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="info-section">
+              <label>Data</label>
+              <p>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            @if (o.courierId) {
+              <mat-divider></mat-divider>
+              <div class="info-section">
+                <label>Estafeta</label>
+                <p>{{ o.courierId.name }}</p>
+                <p class="small">{{ o.courierId.phone }}</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  }
+</div>
